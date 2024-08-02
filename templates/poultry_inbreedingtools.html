@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>家禽育种工具箱</title>
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+			#includefooter {
+				position: relative;
+				height: 100vh;
+				overflow: hidden;
+			}
+		</style>
+		<script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+	</head>
+
+	<body>
+		<h1>上传</h1>
+		<form method="post" enctype="multipart/form-data" action="http://127.0.0.1:5001/analyse">
+			<input class="form-control" type="file" name="file_data"><br />
+			<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
+			<input type="submit" value="提交">
+		</form>
+		<!-- <form method="POST" enctype="multipart/form-data">
+			{{ form.csrf_token }}
+			{{ form.file.label }}
+			{{ form.file }}
+			{{ form.submit }}
+		</form> -->
+		<h1>下载</h1>
+		<form action="/download_template">
+			<button type="submit">Download</button>
+		</form>
+
+		<input type="text" id="poultry_id" />
+		<input type="submit" value="提交" onclick="calc_inbreed_coef()" />
+		<div id="includefooter"></div>
+	</body>
+
+	<script type="text/javascript">
+		// clientSideInclude("includefooter", "../static/temp_files/inbrcoef_202408021556.html");
+		String.prototype.format = function() {
+			if (arguments.length == 0) {
+				return this;
+			}
+			for (var s = this, i = 0; i < arguments.length; i++) {
+				s = s.replace(new RegExp("\\{" + i + "\\}", "g"), arguments[i]);
+			}
+			return s;
+		};
+
+		function calc_inbreed_coef() {
+			// console.log("调用");
+			var pm = document.getElementById("poultry_id").value;
+			console.log("翅号:" + pm);
+			var xhr = new XMLHttpRequest();
+			var URL_v = "calc?mode=single&p=" + pm
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"];
+					console.log(resp);
+					var vset = resp["vset"];
+					var eset = resp["eset"];
+					var posset = resp["posset"];
+					setRelationGraph(vset, eset, posset);
+					msg = resp["log"];
+					console.log(`结果:${resp["res"]}`);
+					// clientSideInclude('includefooter', `${resp["graph_name"]}`);
+				}
+			};
+			xhr.send();
+
+			// await fetch("http://127.0.0.1:5001/calc?mode=single&p="+pm,{
+			// 	method: 'GET',
+			// 	// 不知道为啥，加上请求头就出错
+			// 	// headers:{'Content-Type': 'application/json'},
+			// 	// body: formAudio,
+			// }).then((response) => {
+			// 	console.log("返回值：")
+			// 	console.log(response.json());
+			// 	// isubmit = 1;
+			// });
+		}
+
+		function setRelationGraph(vset, eset, xy) {
+			var myChart = echarts.init(document.getElementById('includefooter'));
+			// console.log(vset);
+			// console.log(eset);
+			// console.log(xy);
+			var input_data = new Array();
+			for (let i = 0; i < vset.length; i++) {
+				input_data.push({
+					name: vset[i] + "",
+					x: xy[i][0] * 3,
+					y: xy[i][1] * 1
+				});
+			}
+			var input_edge = new Array();
+			for (let i = 0; i < eset.length; i++) {
+				input_edge.push({
+					source: eset[i][0] + "",
+					target: eset[i][1] + ""
+				});
+			}
+			// console.log(input_data);
+			// console.log(input_edge);
+
+			var option = {
+				title: [{
+					text: '',
+					left: '10%',
+					top: '0%',
+					textAlign: 'center'
+				}],
+				tooltip: {},
+				animationDurationUpdate: 1500,
+				animationEasingUpdate: 'quinticInOut',
+				series: [{
+					type: 'graph',
+					layout: 'none',
+					symbolSize: 30,
+					roam: true,
+					label: {
+						show: true
+					},
+					edgeSymbol: ['circle', 'arrow'],
+					edgeSymbolSize: [4, 10],
+					edgeLabel: {
+						fontSize: 20
+					},
+					data: input_data,
+					// links: [],
+					links: input_edge,
+					lineStyle: {
+						opacity: 0.9,
+						width: 2,
+						curveness: 0,
+					},
+				}]
+			};
+			myChart.setOption(option);
+		}
+/*
+		var test_vset = [24, 25, 21, 22, 23, 16, 17, 18, 19, 9, 10, 11, 12, 13, 14, 0, 1, 2, 3, 4, 5, 6, 7];
+		var test_eset = [
+			[10, 0],
+			[10, 2],
+			[12, 3],
+			[12, 5],
+			[18, 10],
+			[18, 13],
+			[13, 3],
+			[13, 5],
+			[19, 12],
+			[19, 14],
+			[14, 6],
+			[14, 7],
+			[21, 16],
+			[21, 17],
+			[16, 9],
+			[16, 12],
+			[9, 0],
+			[9, 1],
+			[17, 10],
+			[17, 11],
+			[11, 3],
+			[11, 4],
+			[24, 21],
+			[24, 22],
+			[22, 18],
+			[22, 19],
+			[25, 21],
+			[25, 23],
+			[23, 18],
+			[23, 19]
+		];
+		var test_xy = [
+			[4, 4],
+			[4, 12],
+			[8, 4],
+			[8, 12],
+			[8, 20],
+			[12, 4],
+			[12, 12],
+			[12, 20],
+			[12, 28],
+			[16, 4],
+			[16, 12],
+			[16, 20],
+			[16, 28],
+			[16, 36],
+			[16, 44],
+			[20, 4],
+			[20, 12],
+			[20, 20],
+			[20, 28],
+			[20, 36],
+			[20, 44],
+			[20, 52],
+			[20, 60]
+		];
+		setRelationGraph(test_vset, test_eset, test_xy);*/
+
+		function clientSideInclude(id, url) {
+			var req = false;
+			if (window.XMLHttpRequest) { // Safari, Firefox, 及其他非微软浏览器
+				try {
+					req = new XMLHttpRequest();
+				} catch (e) {
+					req = false;
+				}
+			} else if (window.ActiveXObject) {
+				try {
+					req = new ActiveXObject("Msxml2.XMLHTTP"); // For Internet Explorer on Windows
+				} catch (e) {
+					try {
+						req = new ActiveXObject("Microsoft.XMLHTTP");
+					} catch (e) {
+						req = false;
+					}
+				}
+			}
+			var element = document.getElementById(id);
+			if (!element) {
+				alert("函数clientSideInclude无法找到id " + id + "," + "你的网页中必须有一个含有这个id的div 或 span 标签。");
+				return;
+			}
+			if (req) {
+				req.open('GET', url, false); // 同步请求，等待收到全部内容
+				req.send(null);
+				element.innerHTML = req.responseText;
+			} else {
+				element.innerHTML =
+					"对不起，你的浏览器不支持" + "XMLHTTPRequest 对象。这个网页的显示要求" +
+					"Internet Explorer 5 以上版本, " + "或 Firefox 或 Safari 浏览器，也可能会有其他可兼容的浏览器存在。";
+			}
+		}
+	</script>
+</html>

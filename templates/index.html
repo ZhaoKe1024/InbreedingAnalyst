@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>audio recorder cz</title>
+</head>
+<body>
+	<div id="content" style="width: 1440; height: 3200;">
+		<p id="timestr"></p>
+		<input type="button" id="start" value="开始录音"/>
+		<p id="flag">  静止状态</p>
+		<audio id="audio" controls></audio>
+		<br>
+		<progress id="progressBar" value="0" max="100"></progress>
+		<br /><br />
+		年龄：<input type="text" name="age" id="age" value=""/>
+		<br /><br />
+		性别：<input name ="gender" type ="radio" value = "1" >男&nbsp;
+			<input name ="gender" type ="radio" value = "0" >女
+		<br>
+		<p>--症状--</p>
+		<br />
+		是否感到发烧或者肌肉疼痛？<br /> <input name ="isfever" type ="radio"   value = "1" >是&nbsp;
+			<input name ="isfever" type ="radio"   value = "0" >否
+		<br><br />
+		是否患有其他呼吸系统疾病？<br /> <input name ="respiratory" type ="radio"   value = "1" >是&nbsp;
+			<input name ="respiratory" type ="radio"   value = "0" >否
+		<br><br />
+		是否患有以下病症？<br />
+			<input name ="status" type ="radio"   value = "0" >健康
+			<input name ="status" type ="radio"   value = "1" >COVID-19（新冠肺炎或后遗症）&nbsp;
+			<input name ="status" type ="radio"   value = "2" >有症状但未检测&nbsp;
+		<br>
+		<p>--其他调查--</p>
+		是否抽烟：<input name ="issmoking" type ="radio"   value = "1" >是&nbsp;
+			<input name ="issmoking" type ="radio"   value = "0" >否
+		<br><br />
+		是否无法控制地咳嗽：<input name ="iscough" type ="radio"   value = "1" >是&nbsp;
+			<input name ="iscough" type ="radio"   value = "0" >否
+		<br /><br /><p>可在手机的天气页面查看以下信息：天气、污染指数AQI、空气湿度、位置</p>
+		今日的天气(晴天、多云、下雨、沙尘、...)：<br />
+		<input type="text" name="weather" id="weather" value=""  class="inputblock" />
+		<br><br>
+		当前的空气污染指数(今日AQI指数)：<br />
+		<input type="text" name="aqi" id="aqi" value="" class="inputblock"/>
+		<br><br>
+		当前的空气湿度(今日空气湿度(humidity))：<br />
+		<input type="text" name="humidity" id="humidity" value="" class="inputblock"/>
+		<br><br>
+		当前的当前位置<br />（省+市+精确到区或者县, +[选填 所在学校或单位]）：<br />
+		<input type="text" name="position" id="position" value="" class="inputblock" />
+		<br><br>
+		<input type="submit" id="submit_table" name="" onclick="uploadFile()"/>
+		<!-- <input type="submit" id="submit_table" name="测试" onclick="feath_data()"/> -->
+	</div>
+    <script type="text/javascript">
+		
+		function get_timestr(){
+			var now = new Date();
+			var date_time = Array();
+			var status = 0;
+			var clock;
+			timestr_meg = "";
+			var tmp_str = now.getFullYear(); //年
+			timestr_meg += tmp_str;
+			var str_list = [now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()]
+			for(let i=0; i<str_list.length; i++){
+				if (str_list[i] < 10){
+					timestr_meg += "0"+str_list[i];
+				}else{
+					timestr_meg += str_list[i];
+				}
+			}
+			return timestr_meg;
+		}
+		
+		const input_blocks = document.getElementsByClassName("inputblock");
+		for(let i=0; i< input_blocks.length; i++){
+			input_blocks[i].style.color='#999';
+			input_blocks[i].onFocus = "graytext(this.id)";
+			input_blocks[i].onBlur = "blacktext(this.id)";
+		}
+		function graytext(x){
+			var x_elem = document.getElementById(x);
+			if (x_elem.value == defaultValue){
+				x_elem.value="";
+			}
+		}
+		function blacktext(x){
+			var x_elem = document.getElementById(x);
+			if (! x_elem.value){
+				x_elem.value=defaultValue;
+			}
+		}
+		
+		var formData = new FormData();
+		var chunks = [];
+		var audio_seg;
+		// var reader = new FileReader();
+		var flag = navigator.mediaDevices;
+		console.log("flag:"+flag);
+		if (flag != undefined){
+			const constraints = {audio: true};
+			navigator.mediaDevices.getUserMedia(constraints).then(
+				stream => {
+					console.log("授权成功!");
+					const recordBtn = document.querySelector("#start");
+					const mediaRecorder = new MediaRecorder(stream);
+					recordBtn.onclick = () => {
+						if (mediaRecorder.state === "recording"){
+							mediaRecorder.stop();
+							// console.log(chunks);
+							mediaRecorder.onstop = e => {
+								var blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
+								audio_seg = blob;
+								var audioURL = window.URL.createObjectURL(blob);
+								const audioSrc = document.querySelector("#audio");
+								audioSrc.src = audioURL;
+								chunks = [];
+							};
+							recordBtn.textContent = "record";
+							document.getElementById("flag").innerText = "录音结束，等待上传。";
+							console.log("录音结束");
+							
+						}else{
+							mediaRecorder.start();
+							mediaRecorder.ondataavailable = function(e){
+								chunks.push(e.data);
+							};
+							// console.log(chunks);
+							document.getElementById("flag").innerText = "录音中";
+							console.log("录音中...");
+							recordBtn.textContent = "stop";
+						}
+						console.log("录音器状态：", mediaRecorder.state);
+					};
+				}, 
+				() => {
+					console.log("授权失败！");
+					document.getElementById("flag").innerText = "getUserMedia 授权失败，网站未使用HTTPS协议，或者打开相机权限。";
+					}
+			);
+		}else{
+			console.error("浏览器不支持 getUserMedia，授权失败，网站未使用HTTPS协议，或者打开相机权限。");
+			document.getElementById("flag").innerText = "getUserMedia 授权失败，网站未使用HTTPS协议，或者打开相机权限。";
+		}
+
+		async function uploadFile(){
+			// console.log("先上传分块数据。");
+			var filename_prefix = get_timestr()+"_";
+			
+			const formAudio = new FormData();
+			
+			formAudio.append('audio', audio_seg);
+			formAudio.append('filename', filename_prefix);
+			formAudio.append("sr", 16000);
+			// console.log("FormData to be uploaded:");
+			// console.log(formAudio);
+			await fetch('/postchunk',{
+				method: 'POST',
+				// 不知道为啥，加上请求头就出错
+				// headers:{'Content-Type': 'multipart/form-data'},
+				body: formAudio,
+			}).then((response) => {
+				console.log("返回值：")
+				console.log(response.json());
+				// isubmit = 1;
+				});
+			console.log("音频上传完毕！");
+			document.getElementById("flag").innerText = "上传完毕，点击重新录制。";
+			feath_data(filename_prefix);
+		}
+		
+		function feath_data(filename){
+			var formTable = new FormData();
+			formTable.append("filename", filename);
+			
+			var is_submit = 1;
+			var submit_message = "";
+			// column 1 Age
+			var data_age = parseInt(document.getElementById('age').value);
+			if(data_age < 0 || data_age > 150 || data_age==''){
+				is_submit = 0;
+				submit_message += "请正确输入您的年龄，0到150之间的整数值。";
+			}else{
+				formTable.append("age", data_age);
+			}
+			// column 2 Gender
+			var genders = document.getElementsByName('gender');
+			// console.log(genders[0].checked+"，"+genders[1].checked);
+			if (genders[0].checked == true){
+				formTable.append("gender", 1);
+			}else{
+				formTable.append("gender", 0);
+			}
+			// Column 3 Respiratory_conditions
+			var is_respiratory_condition = document.getElementsByName('respiratory');
+			if (is_respiratory_condition[0].checked == true){
+				formTable.append("respiratory", 1);
+			}else{
+				formTable.append("respiratory", 0);
+			}
+			// Column 4 Fever_muscalpain
+			var isfever = document.getElementsByName('isfever');
+			// console.log(isfever[0].checked+"，"+isfever[1].checked);
+			if (isfever[0].checked == true){
+				formTable.append("isfever", 1);
+			}else{
+				formTable.append("isfever", 0);
+			}
+			// Column 5 status
+			var isfever = document.getElementsByName('status');
+			for(let i=0;i<isfever.length;i++){
+				if(isfever[i].checked==true){
+					formTable.append("status", i);
+				}
+			}
+			// column 6 My[0] is Smoking
+			var issmoking = document.getElementsByName('issmoking');
+			// console.log(issmoking[0].checked+"，"+issmoking[1].checked);
+			if (issmoking[0].checked == true){
+				formTable.append("issmoking", 1);
+			}else{
+				formTable.append("issmoking", 0);
+			}
+			// column 7 My[1] is Cough
+			var iscough = document.getElementsByName('iscough');
+			// console.log(issmoking[0].checked+"，"+issmoking[1].checked);
+			if (iscough[0].checked == true){
+				formTable.append("iscough", 1);
+			}else{
+				formTable.append("iscough", 0);
+			}
+			// column 8 My[2] Weather
+			var weather_item = document.getElementById('weather').value;
+			formTable.append("weather", weather_item);
+
+			// column 9 My[3] AQI
+			var aqi_item = parseInt(document.getElementById('aqi').value);
+			if(aqi_item < 0 ){
+				is_submit = 0;
+				submit_message += "请正确输入空气质量AQI指数，大于0的整数值。";
+			}else{
+				formTable.append("aqi", aqi_item);
+			}
+			// column 10 My[4] humidity
+			var humidity_item = parseInt(document.getElementById('humidity').value);
+			if(humidity_item < 0 ){
+				is_submit = 0;
+				submit_message += "请正确输入空气质量AQI指数，大于0的整数值。";
+			}else{
+				formTable.append("humidity", humidity_item);
+			}
+			if (is_submit == 1){
+				// console.log(submit_message+"填写完成");
+				// var jsonData = JSON.stringify(data);
+				// formData.append("jsondata", jsonData)
+				console.log(formTable);
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', '/getinfo', true);
+				// 不知道为啥，加上请求头就出错
+				// xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState === 4 && xhr.status === 200) {
+						var response = JSON.parse(xhr.responseText);
+						console.log(response);
+					}
+				};
+				xhr.send(formTable);
+				console.log("上传表格信息完成。")
+			}else{
+				alert("出错，请重新填写表单："+submit_message);
+			}
+		}
+    </script>
+</body>
+</html>

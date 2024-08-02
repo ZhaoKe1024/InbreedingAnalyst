@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<title>Simple Graph - Apache ECharts Demo</title>
+	</head>
+	<body>
+		<div id="chart-container"></div>
+		<script src="https://registry.npmmirror.com/echarts/5/files/dist/echarts.min.js"></script>
+	</body>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		#chart-container {
+			position: relative;
+			height: 100vh;
+			overflow: hidden;
+		}
+	</style>
+	<script>
+		var dom = document.getElementById("chart-container");
+		var myChart = echarts.init(dom, null, {
+			renderer: "canvas",
+			useDirtyRect: false,
+		});
+		var app = {};
+
+		var option;
+		var vset = [
+			24, 25, 21, 22, 23, 16, 17, 18, 19, 9, 10, 11, 12, 13, 14, 0, 1, 2, 3, 4,
+			5, 6, 7,
+		];
+		var eset = [
+			[10, 0],
+			[10, 2],
+			[12, 3],
+			[12, 5],
+			[18, 10],
+			[18, 13],
+			[13, 3],
+			[13, 5],
+			[19, 12],
+			[19, 14],
+			[14, 6],
+			[14, 7],
+			[21, 16],
+			[21, 17],
+			[16, 9],
+			[16, 12],
+			[9, 0],
+			[9, 1],
+			[17, 10],
+			[17, 11],
+			[11, 3],
+			[11, 4],
+			[24, 21],
+			[24, 22],
+			[22, 18],
+			[22, 19],
+			[25, 21],
+			[25, 23],
+			[23, 18],
+			[23, 19],
+		];
+		var xy = [
+			[4, 4],
+			[4, 12],
+			[8, 4],
+			[8, 12],
+			[8, 20],
+			[12, 4],
+			[12, 12],
+			[12, 20],
+			[12, 28],
+			[16, 4],
+			[16, 12],
+			[16, 20],
+			[16, 28],
+			[16, 36],
+			[16, 44],
+			[20, 4],
+			[20, 12],
+			[20, 20],
+			[20, 28],
+			[20, 36],
+			[20, 44],
+			[20, 52],
+			[20, 60],
+		];
+		var input_data = new Array();
+		for (let i = 0; i < vset.length; i++) {
+			input_data.push({
+				name: vset[i] + "",
+				x: xy[i][0] * 10,
+				y: xy[i][1] * 10,
+			});
+		}
+		var input_edge = new Array();
+		for (let i = 0; i < eset.length; i++) {
+			input_edge.push({
+				source: eset[i][0] + "",
+				target: eset[i][1] + ""
+			});
+		}
+		option = {
+			title: {
+				text: "Basic Graph",
+			},
+			tooltip: {},
+			animationDurationUpdate: 1500,
+			animationEasingUpdate: "quinticInOut",
+			series: [{
+				type: "graph",
+				layout: "none",
+				symbolSize: 50,
+				roam: true,
+				label: {
+					show: true,
+				},
+				edgeSymbol: ["circle", "arrow"],
+				edgeSymbolSize: [4, 10],
+				edgeLabel: {
+					fontSize: 20,
+				},
+				data: input_data,
+				// links: [],
+				links: input_edge,
+				lineStyle: {
+					opacity: 0.9,
+					width: 2,
+					curveness: 0,
+				},
+			}, ],
+		};
+
+		if (option && typeof option === "object") {
+			myChart.setOption(option);
+		}
+
+		window.addEventListener("resize", myChart.resize);
+	</script>
+</html>

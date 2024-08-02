@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	</head>
+
+	<body>
+		<div>
+			<p>获取设备信息：</p>
+			<p id="infos"></p>
+			<p>上面是结果。</p>
+		</div>
+		<script type="text/javascript">
+			var info_str = plus.device.vendor;
+			document.getElementById("infos").innerHTML("<< "+info_str+" >>");
+		</script>
+	</body>
+
+</html>
