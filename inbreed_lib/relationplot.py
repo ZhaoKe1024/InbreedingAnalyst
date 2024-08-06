@@ -5,10 +5,10 @@
 # @File : relationplot.py
 # @Software: PyCharm
 import random
-from pyecharts import options as opts
-from pyecharts.charts import Graph
-from pyecharts.render import make_snapshot
-from snapshot_selenium import snapshot as driver
+# from pyecharts import options as opts
+# from pyecharts.charts import Graph
+# from pyecharts.render import make_snapshot
+# from snapshot_selenium import snapshot as driver
 
 # vertices = list(range(27))
 # graph = [[10, 0], [10, 2], [12, 3], [12, 5], [18, 10], [18, 13], [13, 3], [13, 5], [19, 12], [19, 14], [14, 6], [14, 7],

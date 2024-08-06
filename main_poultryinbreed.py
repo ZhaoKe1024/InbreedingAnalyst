@@ -36,10 +36,11 @@ print(os.path.exists(save_dir), save_dir)
 class IBCalculator(object):
     def __init__(self):
         super(IBCalculator, self).__init__()
-        self.file_root = "/temp_files/"
+        self.file_root = save_dir
         if not os.path.exists(self.file_root):
             os.makedirs(self.file_root)
         self.analyse_template = self.file_root + "input_template.xlsx"
+        assert os.path.exists(self.analyse_template), "Template File not Exists!"
         self.file_to_analyze = None
         self.file_to_evaluate = None
         self.kinship = None
@@ -190,10 +191,12 @@ def analyse():
         print("文件上传成功")
         calc.file_to_analyze = calc.file_root + file.filename
         calc.analyze()
-        return {"flag": 0, "result": None, "msg": '文件上传成功！并且已成功分析！'}
+        return render_template("./poultry_inbreedingtools.html")
+        # return {"flag": 0, "result": None, "msg": '文件上传成功！并且已成功分析！'}
     else:
         print("Error! method:", request.method)
-        return {"flag": -1, "result": None, "msg": '错误请求类别:{}'.format(request.method)}
+        return render_template("./poultry_inbreedingtools.html")
+        # return {"flag": -1, "result": None, "msg": '错误请求类别:{}'.format(request.method)}
 
 
 @app.route('/calc', methods=['GET', 'POST'])
@@ -278,7 +281,7 @@ def get_generated_result():
 
 
 @app.route('/get_evaled_data')
-def get_generated_result():
+def get_generated_result_data():
     fname = calc.file_root + request.args.get("callf")
     if not os.path.exists(fname):
         raise Exception("Null File generated.")
@@ -292,13 +295,12 @@ def get_generated_result():
     return jsonify({"data": res_data})
 
 
-
 @app.route('/get_evaled_file')
-def get_generated_result():
+def get_generated_result_file():
     fname = request.args.get("callf")
-    if not os.path.exists(calc.file_root+fname):
+    if not os.path.exists(calc.file_root + fname):
         raise Exception("Null File generated.")
-    return send_file(calc.file_root+fname, download_name=fname, as_attachment=True)
+    return send_file(calc.file_root + fname, download_name=fname, as_attachment=True)
 
 
 @app.route('/eval')

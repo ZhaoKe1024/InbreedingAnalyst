@@ -101,7 +101,7 @@ def run_main(file_path, gene_idx="20", result_file=None):
         fid = get_familyid(year, mi, fi)
         fout.write(fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}" + '\n')
         print(fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
-        res_data.append([fid, cur_male_name, cur_female_name, ibc])
+        res_data.append([fid, cur_male_name, cur_female_name, f"{ibc:.4f}"])
         # >>>>>>> Stashed changes
         pre_pos = cur_male
         idx += 1
