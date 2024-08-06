@@ -10,6 +10,60 @@
 			* {
 				margin: 0;
 				padding: 0;
+				box-sizing: border-box;
+				text-decoration: none;
+				list-style: none;
+			}
+
+			a {
+				display: inline-block;
+				color: black;
+				float: left;
+				text-align: center;
+			}
+
+			#calculate {
+				width: 500px;
+				height: 170px;
+				margin: 0 auto;
+				margin-top: 50px;
+				border: 1px solid #e0e0e0;
+			}
+
+			/* 头部样式 */
+			#calculate #tab_head {
+				width: 100%;
+				height: 50px;
+			}
+
+			#calculate #tab_head a {
+				width: 20%;
+				line-height: 50px;
+				background-color: #e0e0e0;
+			}
+
+			#calculate #tab_head a:hover {
+				color: red;
+			}
+
+			#calculate #tab_head .selected a {
+				background-color: whitesmoke;
+			}
+
+			/* 内容样式 */
+			#calculate #tab_body {
+				width: 100%;
+				height: 120px;
+			}
+
+			#calculate #tab_body .dom {
+				margin-top: 10px;
+				display: none;
+			}
+
+			#calculate #tab_body .dom a {
+				width: 50%;
+				padding: 10px 0;
 			}
 
 			#includefooter {
@@ -39,9 +93,63 @@
 			<button type="submit">Download</button>
 		</form>
 
-		<input type="text" id="poultry_id" />
-		<input type="submit" value="提交" onclick="calc_inbreed_coef()" />
-		<div id="includefooter"></div>
+		<div id="calculate">
+			<div id="tab_head">
+				<ul>
+					<li class="selected"></li>
+					<li></li>
+				</ul>
+			</div>
+			<div id="tab_body">
+				<div class="tab_content" style="display: block;">
+					<input type="text" id="poultry_id0" />
+					<br />
+					<input type="submit" value="提交" onclick="calc_inbreed_coef()" />
+				</div>
+				<div class="tab_content">
+					<input type="text" id="poultry_id1" />
+					<input type="text" id="poultry_id2" />
+					<br />
+					<input type="submit" value="提交" onclick="calc_corr_coef()" />
+				</div>
+			</div>
+
+			<textarea name="" id="calculate_result" cols="30" rows="10"></textarea>
+			<div id="includefooter"></div>
+		</div>
+		<div>
+			<h2>评估上传方案</h2>
+			<form method="post" enctype="multipart/form-data" action="http://127.0.0.1:5001/eval">
+				<input class="form-control" type="file" name="file_data"><br />
+				<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
+				<input type="submit" value="提交" onclick="evaluate_resolution()">
+			</form>
+			<div id="eval_res">
+				<p>查看或下载评估方案结果</p>
+				<table border="" cellspacing="" cellpadding="">
+					<tbody id="eval_fs"></tbody>
+				</table>
+				<!-- <form action="/download_template">
+				
+				</form> -->
+				<table id="eval_table">
+					<thead id="evalfilehead"></thead>
+					<tbody id="evalfilebody"></tbody>
+				</table>
+			</div>
+		</div>
+		<div>
+			<h2>生成目标年份的方案</h2>
+			<input type="text" id="t_year" />
+			<input type="submit" value="提交" onclick="generate_new_solution()" />
+			<div id="generated_res">
+				<table id="generated_table">
+					<thead id="genefilehead"></thead>
+					<tbody id="genefilebody"></tbody>
+				</table>
+			</div>
+
+		</div>
 	</body>
 
 	<script type="text/javascript">
@@ -56,9 +164,9 @@
 			return s;
 		};
 
-		function calc_inbreed_coef() {
+		function calc_inbreed_coef(mode) {
 			// console.log("调用");
-			var pm = document.getElementById("poultry_id").value;
+			var pm = document.getElementById("poultry_id0").value;
 			console.log("翅号:" + pm);
 			var xhr = new XMLHttpRequest();
 			var URL_v = "calc?mode=single&p=" + pm
@@ -72,24 +180,42 @@
 					var vset = resp["vset"];
 					var eset = resp["eset"];
 					var posset = resp["posset"];
-					setRelationGraph(vset, eset, posset);
 					msg = resp["log"];
 					console.log(`结果:${resp["res"]}`);
-					// clientSideInclude('includefooter', `${resp["graph_name"]}`);
+					document.getElementById("calculate_result").innerText = resp["res"] + "\n" + resp["log"];
+					setRelationGraph(vset, eset, posset);
 				}
 			};
 			xhr.send();
+		}
 
-			// await fetch("http://127.0.0.1:5001/calc?mode=single&p="+pm,{
-			// 	method: 'GET',
-			// 	// 不知道为啥，加上请求头就出错
-			// 	// headers:{'Content-Type': 'application/json'},
-			// 	// body: formAudio,
-			// }).then((response) => {
-			// 	console.log("返回值：")
-			// 	console.log(response.json());
-			// 	// isubmit = 1;
-			// });
+		function calc_corr_coef() {
+			var p1 = document.getElementById("poultry_id1").value;
+			var p2 = document.getElementById("poultry_id2").value;
+			console.log("翅号:p1=" + p1 + ", p2=" + p2);
+			var xhr = new XMLHttpRequest();
+			var URL_v = "calc?mode=double&p1=" + p1 + "&p2=" + p2
+
+			await fetch(URL_v, {
+				method: 'GET',
+				// 不知道为啥，加上请求头就出错
+				// headers:{'Content-Type': 'application/json'},
+				// body: formAudio,
+			}).then((response) => {
+				console.log("返回值：")
+				console.log(response.json());
+				// isubmit = 1;
+				var response = JSON.parse(xhr.responseText);
+				var resp = response["response"];
+				console.log(resp);
+				var vset = resp["vset"];
+				var eset = resp["eset"];
+				var posset = resp["posset"];
+				msg = resp["log"];
+				console.log(`结果:${resp["res"]}`);
+				document.getElementById("calculate_result").innerText = resp["res"] + "\n" + resp["log"];
+				setRelationGraph(vset, eset, posset);
+			});
 		}
 
 		function setRelationGraph(vset, eset, xy) {
@@ -150,66 +276,170 @@
 			};
 			myChart.setOption(option);
 		}
-/*
-		var test_vset = [24, 25, 21, 22, 23, 16, 17, 18, 19, 9, 10, 11, 12, 13, 14, 0, 1, 2, 3, 4, 5, 6, 7];
-		var test_eset = [
-			[10, 0],
-			[10, 2],
-			[12, 3],
-			[12, 5],
-			[18, 10],
-			[18, 13],
-			[13, 3],
-			[13, 5],
-			[19, 12],
-			[19, 14],
-			[14, 6],
-			[14, 7],
-			[21, 16],
-			[21, 17],
-			[16, 9],
-			[16, 12],
-			[9, 0],
-			[9, 1],
-			[17, 10],
-			[17, 11],
-			[11, 3],
-			[11, 4],
-			[24, 21],
-			[24, 22],
-			[22, 18],
-			[22, 19],
-			[25, 21],
-			[25, 23],
-			[23, 18],
-			[23, 19]
-		];
-		var test_xy = [
-			[4, 4],
-			[4, 12],
-			[8, 4],
-			[8, 12],
-			[8, 20],
-			[12, 4],
-			[12, 12],
-			[12, 20],
-			[12, 28],
-			[16, 4],
-			[16, 12],
-			[16, 20],
-			[16, 28],
-			[16, 36],
-			[16, 44],
-			[20, 4],
-			[20, 12],
-			[20, 20],
-			[20, 28],
-			[20, 36],
-			[20, 44],
-			[20, 52],
-			[20, 60]
-		];
-		setRelationGraph(test_vset, test_eset, test_xy);*/
+		/*
+				var test_vset = [24, 25, 21, 22, 23, 16, 17, 18, 19, 9, 10, 11, 12, 13, 14, 0, 1, 2, 3, 4, 5, 6, 7];
+				var test_eset = [
+					[10, 0],
+					[10, 2],
+					[12, 3],
+					[12, 5],
+					[18, 10],
+					[18, 13],
+					[13, 3],
+					[13, 5],
+					[19, 12],
+					[19, 14],
+					[14, 6],
+					[14, 7],
+					[21, 16],
+					[21, 17],
+					[16, 9],
+					[16, 12],
+					[9, 0],
+					[9, 1],
+					[17, 10],
+					[17, 11],
+					[11, 3],
+					[11, 4],
+					[24, 21],
+					[24, 22],
+					[22, 18],
+					[22, 19],
+					[25, 21],
+					[25, 23],
+					[23, 18],
+					[23, 19]
+				];
+				var test_xy = [
+					[4, 4],
+					[4, 12],
+					[8, 4],
+					[8, 12],
+					[8, 20],
+					[12, 4],
+					[12, 12],
+					[12, 20],
+					[12, 28],
+					[16, 4],
+					[16, 12],
+					[16, 20],
+					[16, 28],
+					[16, 36],
+					[16, 44],
+					[20, 4],
+					[20, 12],
+					[20, 20],
+					[20, 28],
+					[20, 36],
+					[20, 44],
+					[20, 52],
+					[20, 60]
+				];
+				setRelationGraph(test_vset, test_eset, test_xy);*/
+
+		function evaluate_resolution() {
+			var xhr = new XMLHttpRequest();
+			var URL_v = "eval"
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"];
+					var fs_str = "";
+					for (let j=0;j<resp["file_list"].length;j++){
+						fs_str += "<tr>;
+						fs_str += "<td><input type=\"button\" value=\"点击显示表格\" onclick=\"get_evaled_data("+resp["file_list"][j]+")\"/></td>";
+						fs_str += "<td><input type=\"button\" value=\"点击下载表格\" onclick=\"get_evaled_file("+resp["file_list"][j]+")\"/></td>";
+						fs_str += "</tr>";
+					}
+					document.getElementById("eval_fs").innerHTML = fs_str;
+					var reslist = document.getElementById("eval_fs");
+					// var evaled_table = resp["data"];
+					// var showfilehead = document.getElementById('evalfilehead');
+					// showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+					// setRelationTable(evaled_table, "evalfilebody");
+				}
+			};
+			xhr.send();
+		}
+		function get_evaled_data(fname){
+			var xhr = new XMLHttpRequest();
+			var URL_v = "get_evaled_data?callf="+fname;
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"]["data"];
+					
+					// var evaled_table = resp["data"];
+					// var showfilehead = document.getElementById('evalfilehead');
+					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+					setRelationTable(resp, "evalfilebody");
+				}
+			};
+			xhr.send();
+		}
+		function get_evaled_file(fname){
+			var xhr = new XMLHttpRequest();
+			var URL_v = "get_evaled_file?callf="+fname;
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"];
+					var fs_str = "";
+					for (let j=0;j<resp["file_list"].length;j++){
+						fs_str += "<li><input type=\"button\" value=\"\" onclick=\"get_evaled_file("+resp["file_list"][j]+")\"/></li>";
+					}
+					var reslist = document.getElementById("eval_fs")
+					// var evaled_table = resp["data"];
+					// var showfilehead = document.getElementById('evalfilehead');
+					// showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+					// setRelationTable(evaled_table, "evalfilebody");
+				}
+			};
+			xhr.send();
+		}
+
+		function setRelationTable(table_data, div_id) {
+			var showfilebody = document.getElementById(div_id);
+			var tdstr = '';
+			for (var i = 0; i < data.length; i++) {
+				tdstr += '<tr>';
+				for(let j=0;j<data[i].length;j++){
+					tdstr += '<td>' + data[i][j] + '</td>';
+				}
+				tdstr += '</tr>';
+			}
+			showfilebody.innerHTML = tdstr;
+		}
+
+		function generate_new_solution(){
+			var pm = document.getElementById("t_year").value;
+			console.log("年份:" + pm);
+			var xhr = new XMLHttpRequest();
+			var URL_v = "generate?t_year=" + pm
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"];
+					console.log(resp);
+					var data = resp["data"];
+					fname = resp["fname"];
+					console.log(`结果:${resp["res"]}`);
+					document.getElementById("calculate_result").innerText = resp["res"] + "\n" + resp["log"];
+					var showfilehead = document.getElementById('genefilehead');
+					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+					setRelationTable(data, "genefilebody");
+				}
+			};
+			xhr.send();
+		}
 
 		function clientSideInclude(id, url) {
 			var req = false;

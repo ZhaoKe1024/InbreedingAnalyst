@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>测试页面</title>
+		<!-- 引入样式 -->
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+			#includefooter {
+				position: relative;
+				height: 100vh;
+				overflow: hidden;
+			}
+
+			.layer1 {
+				margin-bottom: 80px;
+				margin-left: 30px;
+				background-color: aquamarine;
+				border-radius: 45;
+			}
+
+			#module1_left {
+				float: left;
+			}
+
+			#module1_right {
+				float: left;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<center>
+				<h1>家禽育种分析工具</h1>
+			</center>
+		</div>
+		<div id="main">
+			<div id="module1" class="layer1">
+				<h2>族谱分析工具</h2>
+				<div id="module1_left" class="layer2">
+					<h3>分析族谱数据</h3>
+					<form method="post" enctype="multipart/form-data" action="http://127.0.0.1:5001/analyse">
+						<input class="form-control" type="file" name="file_data"><br />
+						<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
+						<input type="submit" value="提交">
+					</form>
+				</div>
+
+				<!-- <form method="POST" enctype="multipart/form-data">
+					{{ form.csrf_token }}
+					{{ form.file.label }}
+					{{ form.file }}
+					{{ form.submit }}
+				</form> -->
+				<div id="module1_right" class="layer2">
+
+					<h3>下载</h3>
+					<form action="/download_template">
+						<button type="submit">Download</button>
+					</form>
+				</div>
+			</div>
+			<div id="module2" class="layer1">
+				<h2>配种方案评估</h2>
+				<form method="post" enctype="multipart/form-data" action="/eval">
+					<input class="form-control" type="file" name="exist_solution"><br />
+					<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
+					<input type="submit" value="提交">
+				</form>
+			</div>
+			<div id="module3" class="layer1">
+				<h2>配种方案建议</h2>
+				<div>
+					<input type="text" id="t_year" />
+					<input type="submit" value="提交" onclick="#" />
+					<div id="includefooter"></div>
+				</div>
+			</div>
+			<div id="module4" class="layer1">
+				<h2>亲缘关系计算分析工具</h2>
+				<div>
+					<input type="text" id="poultry_id" />
+					<input type="submit" value="提交" onclick="calc_inbreed_coef()" />
+					<div>
+						<p></p>
+						<textarea name="" id="" cols="30" rows="10"></textarea>
+					</div>
+					<div id="includefooter"></div>
+				</div>
+			</div>
+			<div id="module5" class="layer1">
+				<h2></h2>
+			</div>
+			<div id="module6" class="layer1">
+
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		function calc_inbreed_coef() {
+			// console.log("调用");
+			var pm = document.getElementById("poultry_id").value;
+			console.log("翅号:" + pm);
+			var xhr = new XMLHttpRequest();
+			var URL_v = "calc?mode=single&p=" + pm
+			xhr.open("GET", URL_v, true);
+			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp = response["response"];
+					console.log(resp);
+					var vset = resp["vset"];
+					var eset = resp["eset"];
+					var posset = resp["posset"];
+					setRelationGraph(vset, eset, posset);
+					msg = resp["log"];
+					console.log(`结果:${resp["res"]}`);
+					// clientSideInclude('includefooter', `${resp["graph_name"]}`);
+				}
+			};
+			xhr.send();
+
+
+		}
+		function get_new_solution(){
+			var ty = document.getElementById("poultry_id").value;
+			console.log("翅号:" + ty);
+			await fetch("generate?t_year="+ty,{
+				method: 'GET',
+				// 不知道为啥，加上请求头就出错
+				// headers:{'Content-Type': 'application/json'},
+				// body: formAudio,
+			}).then((response) => {
+				console.log("返回值：")
+				console.log(response.json());
+				// isubmit = 1;
+			});			
+		}
+		function setRelationGraph(vset, eset, xy) {
+			var myChart = echarts.init(document.getElementById('includefooter'));
+			// console.log(vset);
+			// console.log(eset);
+			// console.log(xy);
+			var input_data = new Array();
+			for (let i = 0; i < vset.length; i++) {
+				input_data.push({
+					name: vset[i] + "",
+					x: xy[i][0] * 3,
+					y: xy[i][1] * 1
+				});
+			}
+			var input_edge = new Array();
+			for (let i = 0; i < eset.length; i++) {
+				input_edge.push({
+					source: eset[i][0] + "",
+					target: eset[i][1] + ""
+				});
+			}
+			// console.log(input_data);
+			// console.log(input_edge);
+
+			var option = {
+				title: [{
+					text: '',
+					left: '10%',
+					top: '0%',
+					textAlign: 'center'
+				}],
+				tooltip: {},
+				animationDurationUpdate: 1500,
+				animationEasingUpdate: 'quinticInOut',
+				series: [{
+					type: 'graph',
+					layout: 'none',
+					symbolSize: 30,
+					roam: true,
+					label: {
+						show: true
+					},
+					edgeSymbol: ['circle', 'arrow'],
+					edgeSymbolSize: [4, 10],
+					edgeLabel: {
+						fontSize: 20
+					},
+					data: input_data,
+					// links: [],
+					links: input_edge,
+					lineStyle: {
+						opacity: 0.9,
+						width: 2,
+						curveness: 0,
+					},
+				}]
+			};
+			myChart.setOption(option);
+		}
+	</script>
+</html>

@@ -14,8 +14,10 @@ from gevent import pywsgi
 from inbreed_lib.procedure.kinship_on_graph import Kinship
 from inbreed_lib.BreedingMain import run_main
 from inbreed_lib.func import NullNameException
-from inbreed_lib.graphfromtable import get_df_from_xlsx, get_graph_from_data
+from inbreed_lib.procedure.xlsxreader import get_df_from_xlsx
+from inbreed_lib.graphfromtable import get_graph_from_data
 from inbreed_lib.relationplot import generate_relation_plot
+
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.jinja_env.variable_start_string = '<<'
 app.jinja_env.variable_end_string = '>>'
@@ -29,6 +31,8 @@ print(os.path.exists(save_dir), save_dir)
 if not os.path.exists(save_dir):
     os.makedirs(save_dir, exist_ok=True)
 print(os.path.exists(save_dir), save_dir)
+
+
 class IBCalculator(object):
     def __init__(self):
         super(IBCalculator, self).__init__()
@@ -77,7 +81,7 @@ class IBCalculator(object):
             res = self.kinship.calc_kinship_corr(p1=p1, p2=p2)
             # print(res)
             print(self.kinship.analyzer.get_just_message())
-            save_path = save_dir+"corrcoef_{}.html".format(get_cur_timestr())
+            save_path = save_dir + "corrcoef_{}.html".format(get_cur_timestr())
             vset, eset, posset = generate_relation_plot(self.kinship.analyzer.All_Egde_for_Visual, save_path=save_path)
         except NullNameException as e:
             logging.exception(e)
@@ -96,7 +100,7 @@ class IBCalculator(object):
             res = self.kinship.calc_inbreed_coef(p=ct)
             # print(res)
             print(self.kinship.analyzer.get_just_message())
-            save_path = save_dir+"inbrcoef_{}.html".format(get_cur_timestr())
+            save_path = save_dir + "inbrcoef_{}.html".format(get_cur_timestr())
             vset, eset, posset = generate_relation_plot(self.kinship.analyzer.All_Egde_for_Visual, save_path=save_path)
         except NullNameException as e:
             logging.exception(e)
@@ -106,6 +110,7 @@ class IBCalculator(object):
         self.check_kinship()
         sheet_list = ["16", "17", "18", "19", "20"]
         file_names = []
+        # res_data = []
         for sheet_name in sheet_list[1:]:
             edges_df = get_df_from_xlsx(filepath=self.file_to_evaluate, sheet_name=sheet_name,
                                         cols=[1, 2, 3])
@@ -113,11 +118,12 @@ class IBCalculator(object):
                 fout.write("家系号,公号,母号,亲缘相关系数\n")
                 for idx, row in enumerate(edges_df.itertuples()):
                     # print(row[2], row[3])
-                    fout.write(f"{row[1]},{row[2]},{row[3]}," + str(
-                        self.kinship.calc_kinship_corr(p1=str(row[2]), p2=str(row[3]))) + '\n')
+                    ibc = str(self.kinship.calc_kinship_corr(p1=str(row[2]), p2=str(row[3])))
+                    # res_data.append([row[1], row[2], row[3], ibc])
+                    fout.write(f"{row[1]},{row[2]},{row[3]}," + ibc + '\n')
             print(f"表格sheet{sheet_name} 评估完成！")
             file_names.append("./evaluate_{}.csv".format(sheet_name))
-        return file_names
+        return file_names  # , res_data
 
 
 calc = IBCalculator()
@@ -232,7 +238,8 @@ def calculate():
             res, vset, eset, posset = calc.calc_corrcoef(p1=p1, p2=p2)
         else:
             raise Exception("Error mode, only support \'single\' or \'double\'.")
-        return jsonify(response={"res": res, "vset": vset, "eset": eset, "posset": posset, "log": calc.kinship.analyzer.get_just_message()})
+        return jsonify(response={"res": res, "vset": vset, "eset": eset, "posset": posset,
+                                 "log": calc.kinship.analyzer.get_just_message()})
         # json_tosave = {}
         # for key in info_table:
         #     print(key, '\t', info_table[key])
@@ -257,9 +264,10 @@ def generate_new():
         raise Exception("The file to analyse is None.")
     calc.generated_file = None
     result_file_name = f"result_name_rand_{t_year}.csv"
-    run_main(file_path=calc.file_to_analyze, gene_idx=t_year, result_file=calc.file_root+result_file_name)
-    calc.generated_file = calc.file_root+result_file_name
-    return jsonify({"flag": 0, "msg": "生成结果文件：{}".format(result_file_name)})
+    res_data = run_main(file_path=calc.file_to_analyze, gene_idx=t_year, result_file=calc.file_root + result_file_name)
+    calc.generated_file = calc.file_root + result_file_name
+    return jsonify(
+        {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
 
 
 @app.route('/generate_result')
@@ -267,6 +275,30 @@ def get_generated_result():
     if calc.generated_file is None:
         raise Exception("Null File generated.")
     return send_file(calc.generated_file, download_name=calc.generated_file.split('/')[-1], as_attachment=True)
+
+
+@app.route('/get_evaled_data')
+def get_generated_result():
+    fname = calc.file_root + request.args.get("callf")
+    if not os.path.exists(fname):
+        raise Exception("Null File generated.")
+    res_data = []
+    with open(fname) as fin:
+        fin.readline()
+        line = fin.readline()
+        while line:
+            res_data.append(line.split(','))
+            line = fin.readline()
+    return jsonify({"data": res_data})
+
+
+
+@app.route('/get_evaled_file')
+def get_generated_result():
+    fname = request.args.get("callf")
+    if not os.path.exists(calc.file_root+fname):
+        raise Exception("Null File generated.")
+    return send_file(calc.file_root+fname, download_name=fname, as_attachment=True)
 
 
 @app.route('/eval')
@@ -284,8 +316,8 @@ def eval_old():
     result_files = calc.evaluate_solution()
     res_msg = ""
     for j, iten in enumerate(result_files):
-        res_msg += "("+str(j+1)+") " + iten + "\n"
-    return jsonify({"flag": 0, "msg": "生成结果文件："+res_msg})
+        res_msg += "(" + str(j + 1) + ") " + iten + "\n"
+    return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "file_list": result_files})
 
 
 if __name__ == '__main__':
