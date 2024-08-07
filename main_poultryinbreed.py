@@ -39,7 +39,7 @@ class IBCalculator(object):
         self.file_root = save_dir
         if not os.path.exists(self.file_root):
             os.makedirs(self.file_root)
-        self.analyse_template = self.file_root + "input_template.xlsx"
+        self.analyse_template = "./static/ness_files/input_template.xlsx"
         assert os.path.exists(self.analyse_template), "Template File not Exists!"
         self.file_to_analyze = None
         self.file_to_evaluate = None
@@ -112,10 +112,12 @@ class IBCalculator(object):
         sheet_list = ["16", "17", "18", "19", "20"]
         file_names = []
         # res_data = []
+        print("评估：", self.file_to_evaluate)
+        ts = get_cur_timestr()
         for sheet_name in sheet_list[1:]:
             edges_df = get_df_from_xlsx(filepath=self.file_to_evaluate, sheet_name=sheet_name,
                                         cols=[1, 2, 3])
-            with open(self.file_root + "evaluate_{}.csv".format(sheet_name), 'w', encoding="utf_8") as fout:
+            with open(self.file_root + "evaluate_{}_{}.csv".format(ts, sheet_name), 'w', encoding="utf_8") as fout:
                 fout.write("家系号,公号,母号,亲缘相关系数\n")
                 for idx, row in enumerate(edges_df.itertuples()):
                     # print(row[2], row[3])
@@ -123,7 +125,7 @@ class IBCalculator(object):
                     # res_data.append([row[1], row[2], row[3], ibc])
                     fout.write(f"{row[1]},{row[2]},{row[3]}," + ibc + '\n')
             print(f"表格sheet{sheet_name} 评估完成！")
-            file_names.append("./evaluate_{}.csv".format(sheet_name))
+            file_names.append("evaluate_{}_{}.csv".format(ts, sheet_name))
         return file_names  # , res_data
 
 
@@ -286,7 +288,7 @@ def get_generated_result_data():
     if not os.path.exists(fname):
         raise Exception("Null File generated.")
     res_data = []
-    with open(fname) as fin:
+    with open(fname, 'r', encoding="utf_8") as fin:
         fin.readline()
         line = fin.readline()
         while line:
@@ -295,31 +297,35 @@ def get_generated_result_data():
     return jsonify({"data": res_data})
 
 
-@app.route('/get_evaled_file')
-def get_generated_result_file():
-    fname = request.args.get("callf")
+@app.route('/get_evaled_file/<fname>', methods=['GET'])
+def get_generated_result_file(fname):
+    print(calc.file_root, fname)
     if not os.path.exists(calc.file_root + fname):
         raise Exception("Null File generated.")
     return send_file(calc.file_root + fname, download_name=fname, as_attachment=True)
 
 
-@app.route('/eval')
+@app.route('/eval', methods=["POST"])
 def eval_old():
     file_save_name = get_cur_timestr() + ".xlsx"
-    if request.method == 'POST':
-        file = request.files['file_data']
-        print("文件名：", file.filename)
+
+    if 'file_data' not in request.files:
+        return jsonify({'error': '没有文件部分'}), 400
+    file = request.files['file_data']
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+    print("文件名：", file.filename)
+
+    if file:
         file.save(calc.file_root + file_save_name)
         print("文件上传成功")
         calc.file_to_evaluate = calc.file_root + file_save_name
-    else:
-        print("Error! method:", request.method)
-        return {"flag": -1, "result": None, "msg": '错误请求类别:{}'.format(request.method)}
-    result_files = calc.evaluate_solution()
-    res_msg = ""
-    for j, iten in enumerate(result_files):
-        res_msg += "(" + str(j + 1) + ") " + iten + "\n"
-    return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "file_list": result_files})
+        result_files = calc.evaluate_solution()
+        res_msg = ""
+        for j, iten in enumerate(result_files):
+            res_msg += "(" + str(j + 1) + ") " + iten + "\n"
+        return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "file_list": result_files}), 200
+    return jsonify({'error': '未知错误'}), 500
 
 
 if __name__ == '__main__':

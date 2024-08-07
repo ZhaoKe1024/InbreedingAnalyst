@@ -4,7 +4,8 @@
 	<head>
 		<meta charset="utf-8">
 		<title>家禽育种工具箱</title>
-		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
 		<style>
 			* {
 				margin: 0;
@@ -13,11 +14,12 @@
 				text-decoration: none;
 				list-style: none;
 			}
-			#tab_head input{
+
+			#tab_head input {
 				float: left;
 				margin-right: 20px;
 			}
-			
+
 			#includefooter {
 				position: relative;
 				height: 0vh;
@@ -75,17 +77,14 @@
 		</div>
 		<h2 style="margin: 10px;">评估上传方案</h2>
 		<div style="border: 2px solid #000000; border-radius: 5px; width: 300px; margin: 20px;">
-			<form id="eval_submit" method="post" enctype="multipart/form-data" action="/eval">
-				<input class="form-control" type="file" name="file_data"><br />
-				<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
-				<input type="submit" value="提交" onclick="evaluate_resolution()">
-			</form>
+			<input class="form-control" type="file" name="file_data" id="evalfile"><br />
+			<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
+			<input type="submit" value="提交" onclick="evaluate_resolution()">
 			<div id="eval_res" style="display: none;">
 				<p>查看或下载评估方案结果</p>
 				<table border="" cellspacing="" cellpadding="">
 					<tbody id="eval_fs"></tbody>
 				</table>
-				
 				<table id="eval_table">
 					<thead id="evalfilehead"></thead>
 					<tbody id="evalfilebody"></tbody>
@@ -99,13 +98,12 @@
 			<!-- <input type="text" id="t_year" /><input type="text" id="t_year" /> -->
 			<br>
 			<input type="submit" value="提交" onclick="generate_new_solution()" />
-			
+
 			<div id="generated_res">
 				<table id="generated_table" width="800px" height="60px">
 					<tbody id="genefilebody"></tbody>
 				</table>
 			</div>
-			
 		</div>
 	</body>
 
@@ -120,6 +118,7 @@
 			}
 			return s;
 		};
+
 		function showcalcdiv1() {
 			console.log("click1");
 			document.getElementById("calcdiv1").style.display = 'block';
@@ -132,8 +131,7 @@
 			document.getElementById("calcdiv2").style.display = 'block';
 		}
 
-
-		function calc_inbreed_coef(mode) {
+		function calc_inbreed_coef() {
 			// console.log("调用");
 			var pm = document.getElementById("poultry_id0").value;
 			console.log("翅号:" + pm);
@@ -167,8 +165,6 @@
 			xhr.open("GET", URL_v, true);
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
-					console.log("返回值：")
-					console.log(response.json());
 					// isubmit = 1;
 					var response = JSON.parse(xhr.responseText);
 					var resp = response["response"];
@@ -306,7 +302,51 @@
 				setRelationGraph(test_vset, test_eset, test_xy);*/
 
 		function evaluate_resolution() {
-			var xhr = new XMLHttpRequest();
+			const fileInput = document.getElementById('evalfile');  
+			const file = fileInput.files[0]; // 获取文件  
+			if (!file) {  
+			        alert('请选择一个文件');  
+			        return;  
+			}
+			var formData = new FormData();
+			formData.append("file_data", file);
+			console.log(formData);
+			fetch("/eval", {
+				method: 'POST',
+				// headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+				body: formData,
+			}).then(response => {
+				if (!response.ok) {
+					throw new Error('文件上传失败');
+				}
+				return response.json();
+			}).then(data => {
+				// 在这里处理你的数据  
+				console.log(data["msg"]);
+				console.log(data["file_list"]);
+				document.getElementById("eval_res").style.display="block";
+				var fnames = data["file_list"];
+				var fs_str = "";
+				
+				for (let j = 0; j < fnames.length; j++) {
+					fs_str += "<tr>";
+					fs_str += "<td><input type=\"button\" value=\"点击显示表格\" onclick=\"get_evaled_data(\'" + fnames[j] +
+						"\')\"/></td>";
+					var dyn_url = "/get_evaled_file?callf="+fnames[j];
+					
+					fs_str += "<td><input type=\"button\" value=\"点击下载表格\" onclick=\"get_evaled_file(\'" + fnames[j] +
+						"\')\"/></td>";
+					fs_str += "</tr>";
+				}
+				document.getElementById("eval_fs").innerHTML = fs_str;
+				// // 假设你想把数据显示在页面上的某个元素中  
+				// document.getElementById('someElementId').innerText = data.someKey;
+			})
+			.catch(error => {
+				// 处理请求失败的情况  
+				console.error('There was a problem with your fetch operation:', error);
+			});
+			/*var xhr = new XMLHttpRequest();
 			var URL_v = "eval"
 			xhr.open("POST", URL_v);
 			xhr.sestRequestHeader('Content-Type','application/x-www-form-urlencoded');
@@ -324,18 +364,14 @@
 						fs_str += "</tr>";
 					}
 					document.getElementById("eval_fs").innerHTML = fs_str;
-					/*var reslist = document.getElementById("eval_fs");
-					var evaled_table = resp["data"];
-					var showfilehead = document.getElementById('evalfilehead');
-					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
-					setRelationTable(evaled_table, "evalfilebody");*/
+					//var reslist = document.getElementById("eval_fs");
+					//var evaled_table = resp["data"];
+					//var showfilehead = document.getElementById('evalfilehead');
+					//showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+					//setRelationTable(evaled_table, "evalfilebody");
 				}
 			};
-			var form = document.getElementById("eval_submit");
-			var formData = new FormData(form);
-			var content = formData.get("file_data");
-			formData.append("file_data", content);
-			xhr.send(formData);
+			xhr.send(formData);*/
 		}
 
 		function get_evaled_data(fname) {
@@ -346,7 +382,7 @@
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					var response = JSON.parse(xhr.responseText);
-					var resp = response["response"]["data"];
+					var resp = response["data"];
 					// var evaled_table = resp["data"];
 					var showfilehead = document.getElementById('evalfilehead');
 					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
@@ -356,29 +392,40 @@
 			xhr.send();
 		}
 
-		// function get_evaled_file(fname) {
-		// 	var xhr = new XMLHttpRequest();
-		// 	var URL_v = "get_evaled_file?callf=" + fname;
-		// 	xhr.open("GET", URL_v, true);
-		// 	// xhr.sestRequestHeader('Content-Type','application/json');
-		// 	xhr.onreadystatechange = function() {
-		// 		if (xhr.readyState === 4 && xhr.status === 200) {
-		// 			var response = JSON.parse(xhr.responseText);
-		// 			var resp = response["response"];
-		// 			var fs_str = "";
-		// 			for (let j = 0; j < resp["file_list"].length; j++) {
-		// 				fs_str += "<li><input type=\"button\" value=\"\" onclick=\"get_evaled_file(" + resp["file_list"][j] +
-		// 					")\"/></li>";
-		// 			}
-		// 			var reslist = document.getElementById("eval_fs")
-		// 			// var evaled_table = resp["data"];
-		// 			// var showfilehead = document.getElementById('evalfilehead');
-		// 			// showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
-		// 			// setRelationTable(evaled_table, "evalfilebody");
-		// 		}
-		// 	};
-		// 	xhr.send();
-		// }
+		function get_evaled_file(fname) {
+			// 构造下载URL  
+			const url = '/get_evaled_file/' + encodeURIComponent(fname);  
+		  
+			// 创建一个a标签  
+			const a = document.createElement('a');  
+			a.href = url;  
+			// 这里不需要设置download属性，因为Flask的send_file已经会处理  
+			a.style.display = 'none';  
+			document.body.appendChild(a);  
+			a.click();  
+			document.body.removeChild(a);  
+			// var xhr = new XMLHttpRequest();
+			// var URL_v = "get_evaled_file?callf=" + fname;
+			// xhr.open("GET", URL_v, true);
+			// // xhr.sestRequestHeader('Content-Type','application/json');
+			// xhr.onreadystatechange = function() {
+			// 	if (xhr.readyState === 4 && xhr.status === 200) {
+			// 		var response = JSON.parse(xhr.responseText);
+			// 		var resp = response["response"];
+			// 		var fs_str = "";
+			// 		for (let j = 0; j < resp["file_list"].length; j++) {
+			// 			fs_str += "<li><input type=\"button\" value=\"\" onclick=\"get_evaled_file(" + resp["file_list"][j] +
+			// 				")\"/></li>";
+			// 		}
+			// 		var reslist = document.getElementById("eval_fs")
+			// 		// var evaled_table = resp["data"];
+			// 		// var showfilehead = document.getElementById('evalfilehead');
+			// 		// showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th>";
+			// 		// setRelationTable(evaled_table, "evalfilebody");
+			// 	}
+			// };
+			// xhr.send();
+		}
 
 		function setRelationTable(table_data, div_id) {
 			var showfilebody = document.getElementById(div_id);

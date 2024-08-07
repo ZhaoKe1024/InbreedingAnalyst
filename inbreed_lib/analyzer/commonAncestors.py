@@ -528,16 +528,18 @@ class FamilyAnalyzer(object):
                 # print(pair_path_1, pair_path_2)
                 # # print(All_Egde_for_Visual)
                 # print("------------------------------")
-                for j in range(len(pair_path_1) - 1):
-                    if not object_contrain(self.All_Egde_for_Visual, ((pair_path_1[j], pair_depth_1[j]),
-                                                                      (pair_path_1[j + 1], pair_depth_1[j + 1]))):
-                        self.All_Egde_for_Visual.append(
-                            ((pair_path_1[j], pair_depth_1[j]), (pair_path_1[j + 1], pair_depth_1[j + 1])))
-                for j in range(len(pair_path_2) - 1):
-                    if not object_contrain(self.All_Egde_for_Visual, ((pair_path_2[j], pair_depth_2[j]),
-                                                                      (pair_path_2[j + 1], pair_depth_2[j + 1]))):
-                        self.All_Egde_for_Visual.append(
-                            ((pair_path_2[j], pair_depth_2[j]), (pair_path_2[j + 1], pair_depth_2[j + 1])))
+                if pair_path_1 is not None:
+                    for j in range(len(pair_path_1) - 1):
+                        if not object_contrain(self.All_Egde_for_Visual, ((pair_path_1[j], pair_depth_1[j]),
+                                                                          (pair_path_1[j + 1], pair_depth_1[j + 1]))):
+                            self.All_Egde_for_Visual.append(
+                                ((pair_path_1[j], pair_depth_1[j]), (pair_path_1[j + 1], pair_depth_1[j + 1])))
+                if pair_path_2 is not None:
+                    for j in range(len(pair_path_2) - 1):
+                        if not object_contrain(self.All_Egde_for_Visual, ((pair_path_2[j], pair_depth_2[j]),
+                                                                          (pair_path_2[j + 1], pair_depth_2[j + 1]))):
+                            self.All_Egde_for_Visual.append(
+                                ((pair_path_2[j], pair_depth_2[j]), (pair_path_2[j + 1], pair_depth_2[j + 1])))
             # print("===========================")
 
         return res

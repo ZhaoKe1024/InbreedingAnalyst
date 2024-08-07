@@ -26,9 +26,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
-/temp_files/*.html
 /static/temp_files/
+/temp_files/
 /recorded_audio/
 
 # PyInstaller
