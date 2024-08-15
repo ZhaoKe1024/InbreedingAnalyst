@@ -92,13 +92,15 @@
 			</div>
 		</div>
 		<h2 style="margin: 10px;">生成目标年份的方案</h2>
-		<div style="width: 800px; border: 2px solid #000000; border-radius: 5px; margin: 20px;">
+		<div style="width: 800px; border: 2px solid #000000; border-radius: 5px; margin: 20px;;">
 			<input type="text" id="t_year" /><!-- <input type="text" id="t_year" />
 			<br> -->
 			<!-- <input type="text" id="t_year" /><input type="text" id="t_year" /> -->
 			<br>
 			<input type="submit" value="提交" onclick="generate_new_solution()" />
-
+			<span id="download_gene" >
+				
+			</span>
 			<div id="generated_res">
 				<table id="generated_table" width="800px" height="60px">
 					<tbody id="genefilebody"></tbody>
@@ -118,6 +120,54 @@
 			}
 			return s;
 		};
+		
+		 function rgbToHex(r, g, b){
+		    var hex = ((r << 16) | (g << 8) | b).toString(16);
+		    return "#" + new Array(Math.abs(hex.length - 7)).join("0") + hex;
+		 }
+		 // hex to rgb
+		 function hexToRgb(hex){
+		     var rgb = [];
+		     for (var i = 1; i < 7; i += 2){
+		        rgb.push(parseInt("0x" + hex.slice(i, i + 2)));
+		     }
+		     return rgb;
+		 }
+		 // 计算渐变过渡色
+		 function gradient(startColor, endColor, step){
+		    // 将 hex 转换为rgb
+		     var sColor = hexToRgb(startColor),
+		     eColor = hexToRgb(endColor);
+		  
+		    // 计算R\G\B每一步的差值
+		    var rStep = (eColor[0] - sColor[0]) / step,
+		        gStep = (eColor[1] - sColor[1]) / step,
+		        bStep = (eColor[2] - sColor[2]) / step;
+		  
+		    var gradientColorArr = [];
+		    for (var i = 0;i < step;i++){
+		        // 计算每一步的hex值
+		        gradientColorArr.push(rgbToHex(parseInt(rStep * i + sColor[0]), parseInt(gStep * i + sColor[1]), parseInt(bStep * i + sColor[2])));
+		    }
+		    return gradientColorArr;
+		}
+		 
+		// 测试
+		var colorArr = gradient('#0082FF', '#FF4A66', 10);  
+		/*
+		就得到了分割了10份的色值数组
+		 [ '#0082ff',
+		  '#197cef',
+		  '#3376e0',
+		  '#4c71d1',
+		  '#666bc1',
+		  '#7f66b2',
+		  '#9960a3',
+		  '#b25a93',
+		  '#cc5584',
+		  '#e54f75' ]
+		*/
+		
 
 		function showcalcdiv1() {
 			console.log("click1");
@@ -432,9 +482,11 @@
 			var tdstr = '<tr><th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th></tr>';
 			for (var i = 0; i < table_data.length; i++) {
 				tdstr += '<tr>';
-				for (let j = 0; j < table_data[i].length; j++) {
+				var L = table_data[i].length;
+				for (let j = 0; j < L-1; j++) {
 					tdstr += '<td width=80px>' + table_data[i][j] + '</td>';
 				}
+				tdstr += '<td width=80px style=\"background-color: '+colorArr[parseInt(parseFloat(table_data[i][L-1])*10)]+'\">' + table_data[i][L-1] + '</td>';
 				tdstr += '</tr>';
 			}
 			showfilebody.innerHTML = tdstr;
@@ -461,6 +513,9 @@
 					// console.log(`结果:${response["res"]}`);
 					// document.getElementById("calculate_result").innerText = response["res"] + "\n" + response["log"];
 					// var showfilehead = document.getElementById('genefilehead').style.display = "block";
+					
+					document.getElementById("download_gene").innerHTML = "<input type=\"button\" value=\"点击下载方案\" onclick=\"get_evaled_file(\'" + fname +
+						"\')\"/>";
 					setRelationTable(data, "genefilebody");
 				}
 			};

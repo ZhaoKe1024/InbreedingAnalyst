@@ -466,11 +466,9 @@ class FamilyAnalyzer(object):
         :param ind2: forward index of vertex 2
         :return:
         """
-        if final == 0:
-            self.Result_ancestors = f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的共同祖先的编号:["
-        elif final == 1:
-            self.Result_ancestors += f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的共同祖先的编号:["
         common_ancestors = self.find_all_common_ancestors(ind1, ind2)
+        if final in [0, 1]:
+            self.Result_ancestors = f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的共同祖先个数:{len(common_ancestors)}, 编号分别是:["
         # print(f"common ancestors of {self.__name(ind1)} and {self.__name(ind2)}:")
         # print('\t', [self.__name(val) for val in common_ancestors])
         if final in [0, 1]:
@@ -530,16 +528,16 @@ class FamilyAnalyzer(object):
                 # print("------------------------------")
                 if pair_path_1 is not None:
                     for j in range(len(pair_path_1) - 1):
-                        if not object_contrain(self.All_Egde_for_Visual, ((pair_path_1[j], pair_depth_1[j]),
-                                                                          (pair_path_1[j + 1], pair_depth_1[j + 1]))):
+                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_1[j]), self.__name(pair_depth_1[j])),
+                                                                          (self.__name(pair_path_1[j + 1]), self.__name(pair_depth_1[j + 1])))):
                             self.All_Egde_for_Visual.append(
-                                ((pair_path_1[j], pair_depth_1[j]), (pair_path_1[j + 1], pair_depth_1[j + 1])))
+                                ((self.__name(pair_path_1[j]), self.__name(pair_depth_1[j])), (self.__name(pair_path_1[j + 1]), self.__name(pair_depth_1[j + 1]))))
                 if pair_path_2 is not None:
                     for j in range(len(pair_path_2) - 1):
-                        if not object_contrain(self.All_Egde_for_Visual, ((pair_path_2[j], pair_depth_2[j]),
-                                                                          (pair_path_2[j + 1], pair_depth_2[j + 1]))):
+                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_2[j]), self.__name(pair_depth_2[j])),
+                                                                          (self.__name(pair_path_2[j + 1]), self.__name(pair_depth_2[j + 1])))):
                             self.All_Egde_for_Visual.append(
-                                ((pair_path_2[j], pair_depth_2[j]), (pair_path_2[j + 1], pair_depth_2[j + 1])))
+                                ((self.__name(pair_path_2[j]), self.__name(pair_depth_2[j])), (self.__name(pair_path_2[j + 1]), self.__name(pair_depth_2[j + 1]))))
             # print("===========================")
 
         return res
@@ -562,10 +560,10 @@ class FamilyAnalyzer(object):
         d = self.inv_vertex_list[self.__invIdx(indi)].depth
         p1d = self.inv_vertex_list[self.__invIdx(parent[0])].depth
         p2d = self.inv_vertex_list[self.__invIdx(parent[1])].depth
-        if not object_contrain(self.All_Egde_for_Visual, ((indi, d), (parent[0], p1d))):
-            self.All_Egde_for_Visual.append(((indi, d), (parent[0], p1d)))
-        if not list_contrain(self.All_Egde_for_Visual, ((indi, d), (parent[1], p2d))):
-            self.All_Egde_for_Visual.append(((indi, d), (parent[1], p2d)))
+        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(indi), self.__name(d)), (self.__name(parent[0]), self.__name(p1d)))):
+            self.All_Egde_for_Visual.append(((self.__name(indi), self.__name(d)), (self.__name(parent[0]), self.__name(p1d))))
+        if not list_contrain(self.All_Egde_for_Visual, ((self.__name(indi), self.__name(d)), (self.__name(parent[1]), self.__name(p2d)))):
+            self.All_Egde_for_Visual.append(((self.__name(indi), self.__name(d)), (self.__name(parent[1]), self.__name(p2d))))
         # print(self.relagraph_ancestors_inbreed)
         if final == 0:
             print(f"{self.__name(indi)}的双亲:", [self.__name(val) for val in parent])
