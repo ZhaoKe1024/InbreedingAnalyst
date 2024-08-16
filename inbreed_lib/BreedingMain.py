@@ -10,14 +10,19 @@ import numpy as np
 from inbreed_lib.graphfromtable import get_graph_from_data
 from inbreed_lib.selector.GASelector import GASelector
 from inbreed_lib.procedure.kinship_on_graph import Kinship
-from inbreed_lib.func import get_familyid
+from inbreed_lib.func import IDGenerator
 
 
 def run_main(file_path, gene_idx="20", result_file=None):
-    layergraph, vertex_layer, vertex_list = get_graph_from_data(file_path=file_path)
+    idgenarator = IDGenerator(end_number=20000, year=str(int(gene_idx) + 1))
+    layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
     kinship = Kinship(graph=layergraph)
-
-    year2idx = {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
+    sheet_list += [str(int(sheet_list[-1])+1)]
+    print("Sheet list:", sheet_list)
+    year2idx = {}  # {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
+    for jdx, item in enumerate(sheet_list):
+        year2idx[item] = jdx
+    print("Sheet list:", year2idx)
     print("Load edges from", gene_idx)
     popus = []
     print("year idx", year2idx[gene_idx])
@@ -75,15 +80,28 @@ def run_main(file_path, gene_idx="20", result_file=None):
     print("(家系号，雄性个体编号, 雌性个体编号)]")
     idx = 1
     fout = open(result_file, 'w', encoding="utf_8")
-    fout.write("家系号,公号,母号,亲缘相关系数\n")
+    fout.write(
+        "配种方案,家系号,公鸡号,母鸡号,亲缘相关系数,出雏,批次,翅号,公鸡号,母鸡号,{}年家系号,性别\n".format(gene_idx))
+    # print("配种方案", "家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号", "{}年家系号".format(gene_idx))
     year, mi, fi = "21", 1, 1
-    print(
-        f"{popus[pre_pos].family_id},{pre_pos}:[({popus[cur_female].family_id},{male_num + cur_female})",
-        end=', ')
-    fout.write(get_familyid(year, mi, fi) + "," + popus[pre_pos].name + "," + popus[
-        male_num + cur_female].name + "," + f"{kinship_matrix[pre_pos, cur_female]:.5f}" + '\n')
+    # print(
+    #     f"{popus[pre_pos].family_id},{pre_pos}:[({popus[cur_female].family_id},{male_num + cur_female})",
+    #     end=', ')
+    tmp_fid = idgenarator.get_family_id(y="", m=mi)
+    sex_id = idgenarator.get_rand_gender()
+    child_id = idgenarator.get_new_id()
+    fout.write(","  # col 1
+               + tmp_fid + ","  # col 2 家系号
+               + popus[pre_pos].name + ","  # col 3 公号
+               + popus[male_num + cur_female].name + ","  # col 4 母号
+               + f"{kinship_matrix[pre_pos, cur_female]:.5f},,,"  # col 5  亲缘相关系数 6 7
+               + child_id + ','
+               + popus[pre_pos].name + ","  # col 9 公号
+               + popus[male_num + cur_female].name + ","  # col 10 母号
+               + tmp_fid + ","
+               + sex_id + '\n')  # 11 家系号
     fi += 1
-    threshold = 0.2
+    # threshold = 0.5
     res_data = []
     while idx < len(best_solution):
         cur_male = best_solution.vector_male[idx]
@@ -98,10 +116,21 @@ def run_main(file_path, gene_idx="20", result_file=None):
         #                         fi) + "," + cur_male_name + "," + cur_female_name + "," + f"{kinship_matrix[cur_male, cur_female]:.5f}" + '\n')
         # =======
         ibc = kinship_matrix[cur_male, cur_female]
-        fid = get_familyid(year, mi, fi)
-        fout.write(fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}" + '\n')
-        print(fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
-        res_data.append([fid, cur_male_name, cur_female_name, f"{ibc:.4f}"])
+        tmp_fid = idgenarator.get_family_id(y="", m=mi)
+        sex_id = idgenarator.get_rand_gender()
+        child_id = idgenarator.get_new_id()
+        fout.write(","  # col 1
+                   + tmp_fid + ","  # col 2 家系号
+                   + popus[pre_pos].name + ","  # col 3 公号
+                   + popus[male_num + cur_female].name + ","  # col 4 母号
+                   + f"{kinship_matrix[pre_pos, cur_female]:.5f},,,"  # col 5  亲缘相关系数 6 7
+                   + child_id + ','
+                   + popus[pre_pos].name + ","  # col 9 公号
+                   + popus[male_num + cur_female].name + ","  # col 10 母号
+                   + tmp_fid + ","
+                   + sex_id + '\n')
+        print(tmp_fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
+        res_data.append(["", tmp_fid, cur_male_name, cur_female_name, f"{ibc:.4f}", child_id, sex_id])
         # >>>>>>> Stashed changes
         pre_pos = cur_male
         idx += 1
@@ -152,7 +181,15 @@ def run_n_generations(input_start, input_end, last_n):
 
 
 if __name__ == '__main__':
-    for i in [17, 18, 19, 20]:
-        run_main(gene_idx=str(i))
-    run_main(gene_idx="21")
+    # for i in [17, 18, 19, 20]:
+    #     run_main(gene_idx=str(i))
+    import pandas as pd
+
+    df1 = run_main(file_path="../temp_files/历代配种方案及出雏对照2021_带性别.xlsx", gene_idx="21",
+                   result_file="./test.csv")
+    df1 = pd.read_csv("./test.csv", header=0, index_col=None)
+    writer = pd.ExcelWriter("../temp_files/历代配种方案及出雏对照2021_带性别_21.xlsx")
+    df1.to_excel(writer, "2021")  # first是第一张工作表名称
+    writer.save()
+
     # print(np.random.randn(2, 10))

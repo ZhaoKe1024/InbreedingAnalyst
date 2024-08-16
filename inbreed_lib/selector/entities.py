@@ -7,7 +7,7 @@
 import random
 from typing import List
 import numpy as np
-from inbreed_lib.func import get_new_id, get_rand_gender
+# from inbreed_lib.func import get_new_id, get_rand_gender
 
 
 class Vertex(object):
@@ -44,16 +44,16 @@ class Poultry(object):
         else:
             raise Exception("这个雄性家禽已经分配10个配种了，不能再加了。")
 
-    def breeding_offsprings(self):
-        offsprings = []
-        for item in self.spouses:
-            for j in range(random.randint(0, 11)):
-                new_poultry = Poultry(fi=self.family_id, wi=get_new_id(), fa_i=self.wing_id, ma_i=item.wing_id,
-                                      sex=get_rand_gender(), inbreedc=calculate_inbreed_coef(self, item))
-                new_poultry.ancestry.push(self)
-                offsprings.append(new_poultry)
-        print(f"生育{len(offsprings)}个。")
-        return offsprings
+    # def breeding_offsprings(self):
+    #     offsprings = []
+    #     for item in self.spouses:
+    #         for j in range(random.randint(0, 11)):
+    #             new_poultry = Poultry(fi=self.family_id, wi=get_new_id(), fa_i=self.wing_id, ma_i=item.wing_id,
+    #                                   sex=get_rand_gender(), inbreedc=calculate_inbreed_coef(self, item))
+    #             new_poultry.ancestry.push(self)
+    #             offsprings.append(new_poultry)
+    #     print(f"生育{len(offsprings)}个。")
+    #     return offsprings
 
     def __str__(self):
         return f"family:{self.family_id}, wing_id:{self.wing_id}, father:{self.fa_i}, mother:{self.ma_i}"

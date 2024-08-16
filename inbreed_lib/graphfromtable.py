@@ -4,6 +4,7 @@
 # @Author: ZhaoKe
 # @File : graphfromtable.py
 # @Software: PyCharm
+import pandas as pd
 from inbreed_lib.procedure.xlsxreader import get_df_from_xlsx
 from inbreed_lib.selector.entities import Vertex
 from inbreed_lib.analyzer.LayerGraph import LayerNetworkGraph
@@ -16,7 +17,10 @@ def get_graph_from_data(file_path):
     # # print()
     # np.random.seed(42)  # 2024-04-02
     # kinship_matrix = 1 / 16 + 1 / 16 * np.random.randn(len(male_idxs), len(female_idxs))
-    sheet_list = ["16", "17", "18", "19", "20"]
+    df = pd.read_excel(file_path, header=0, sheet_name=None)
+    sheet_list = list(df.keys())
+    # for item in sheet_list:
+    #     if item
     vertex_list, vertex_layer, children_list, pre_name2idx = build_family_graph_base(
         file_path=file_path,
         sheet_list=sheet_list)
@@ -46,9 +50,9 @@ def get_graph_from_data(file_path):
     vertex_list.extend(new_vertices)
     vertex_layer.append([ver.index for ver in new_vertices])
     # children_list =
-    idx2year = {0: "16", 1: "17", 2: "18", 3: "19", 4: "20", 5:"21"}
+    idx2year = {0: "16", 1: "17", 2: "18", 3: "19", 4: "20", 5: "21"}
     # for idx, item in enumerate(vertex_layer):
     #     print(idx2year[idx])
     #     print([vertex_list[j].name for j in item])
     layergraph = LayerNetworkGraph(vertex_list=vertex_list, vertex_layer=vertex_layer, children=children_list)
-    return layergraph, vertex_layer, vertex_list
+    return layergraph, vertex_layer, vertex_list, sheet_list

@@ -103,7 +103,10 @@
 			</span>
 			<div id="generated_res">
 				<table id="generated_table" width="800px" height="60px">
-					<tbody id="genefilebody"></tbody>
+					<tbody id="gene_table">
+						<thead id="genenewhead"></thead>
+						<tbody id="genefilebody"></tbody>
+					</tbody>
 				</table>
 			</div>
 		</div>
@@ -479,7 +482,8 @@
 
 		function setRelationTable(table_data, div_id) {
 			var showfilebody = document.getElementById(div_id);
-			var tdstr = '<tr><th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th></tr>';
+			// var tdstr = '<tr><th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th></tr>';
+			var tdstr = "";
 			for (var i = 0; i < table_data.length; i++) {
 				tdstr += '<tr>';
 				var L = table_data[i].length;
@@ -516,6 +520,8 @@
 					
 					document.getElementById("download_gene").innerHTML = "<input type=\"button\" value=\"点击下载方案\" onclick=\"get_evaled_file(\'" + fname +
 						"\')\"/>";
+					var showfilehead = document.getElementById('evalfilehead');
+					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th><th>幼崽翅号</th><th>幼崽性别</th>";
 					setRelationTable(data, "genefilebody");
 				}
 			};

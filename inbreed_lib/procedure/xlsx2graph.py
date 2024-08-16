@@ -12,10 +12,9 @@ from inbreed_lib.procedure.xlsxreader import get_df_from_xlsx
 
 
 def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2021.xlsx", sheet_name: str = "16", id_start=0,
-                                 depth=0) -> List[
-    Vertex]:
+                                 depth=0) -> List[Vertex]:
     sex_table = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_name, cols=[1, 2, 3])
-    # print(sex_table.head())
+    print(sex_table.head())
     # -----------------------------------------------
     # -------------Build Vertex List-----------------
     # -----------------------------------------------

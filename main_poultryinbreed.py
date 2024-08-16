@@ -42,6 +42,8 @@ class IBCalculator(object):
         self.analyse_template = "./static/ness_files/input_template.xlsx"
         assert os.path.exists(self.analyse_template), "Template File not Exists!"
         self.file_to_analyze = None
+        self.sheet_list = None
+        self.max_year = None
         self.file_to_evaluate = None
         self.kinship = None
         self.generated_file = None
@@ -65,8 +67,14 @@ class IBCalculator(object):
             raise Exception("暂时仅支持Excel文件!")
         # self.show_text_func()
         # self.kinship = Kinship(file_path=self.file_to_analyze, graph=None)
-        layergraph, vertex_layer, vertex_list = get_graph_from_data(file_path=self.file_to_analyze)
-
+        layergraph, vertex_layer, vertex_list, self.sheet_list = get_graph_from_data(file_path=self.file_to_analyze)
+        try:
+            self.sheet_list = [int(item) for item in self.sheet_list]
+            self.max_year = self.sheet_list[-1]
+        except Exception as e:
+            print(e)
+            print("sheet名字不是数值字符串，出现非数字，请仔细检查并重新设置名字。")
+            # exit(-1)
         self.kinship = Kinship(graph=layergraph)
 
     def calc_corrcoef(self, p1: str, p2: str):
@@ -192,7 +200,11 @@ def analyse():
 
         print("文件上传成功")
         calc.file_to_analyze = calc.file_root + file.filename
-        calc.analyze()
+        try:
+            calc.analyze()
+        except Exception as e:
+            print(e)
+            print("sheet名字不是数值字符串，出现非数字，请仔细检查并重新设置名字。")
         return render_template("./poultry_inbreedingtools.html")
         # return {"flag": 0, "result": None, "msg": '文件上传成功！并且已成功分析！'}
     else:
@@ -264,15 +276,23 @@ def calculate():
 
 @app.route('/generate')
 def generate_new():
-    t_year = request.args.get("t_year")
     if calc.file_to_analyze is None:
         raise Exception("The file to analyse is None.")
-    calc.generated_file = None
-    result_file_name = f"result_name_rand_{t_year}.csv"
-    res_data = run_main(file_path=calc.file_to_analyze, gene_idx=t_year, result_file=calc.file_root + result_file_name)
-    calc.generated_file = calc.file_root + result_file_name
-    return jsonify(
-        {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
+    t_year = request.args.get("t_year")
+    if '.' in t_year:
+        return jsonify({"flag": -1, "msg": "请给出整数数值"})
+    t_year = int(t_year)
+    if t_year <= calc.max_year+1:
+
+        calc.generated_file = None
+        result_file_name = f"result_name_rand_{t_year}.csv"
+        res_data = run_main(file_path=calc.file_to_analyze, gene_idx=t_year, result_file=calc.file_root + result_file_name)
+        calc.generated_file = calc.file_root + result_file_name
+        return jsonify(
+            {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
+    else:
+        for f_year in range(calc.max_year+1, t_year+1):
+            pass
 
 
 @app.route('/generate_result')
