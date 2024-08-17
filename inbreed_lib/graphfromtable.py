@@ -28,7 +28,7 @@ def get_graph_from_data(file_path):
     # print("pre_name2idx:")
     # print(pre_name2idx)
     # ------------Poultry read and build-------------------------
-    edges_df = get_df_from_xlsx(filepath=file_path, sheet_name="20",
+    edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_list[-1],
                                 cols=[7, 8, 9, 10])
     # print(edges_df.columns)
     # new_children = []

@@ -294,21 +294,25 @@ def generate_new():
             {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
     else:
         assert calc.max_year+2 < t_year+1, "max_year:{} t_year:{}".format(calc.max_year+2, t_year+1)
+        cur_file = calc.file_to_analyze
+        name_template = save_dir + "result_name_rand_{}.csv"
+        res_data = None
         for f_year in range(calc.max_year+2, t_year+1):
             # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
 
-            df1 = run_main(file_path=calc.file_to_analyze, gene_idx=str("f_year"),
-                           result_file="./test.csv")
+            res_data = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./test.csv")
 
-            book = load_workbook("../temp_files/历代配种方案及出雏对照2021_带性别.xlsx")
-            writer = pd.ExcelWriter("../temp_files/历代配种方案及出雏对照2021_带性别_{}.xlsx".format(f_year), engine='openpyxl')
+            book = load_workbook(cur_file)
+            writer = pd.ExcelWriter(name_template.format(f_year), engine='openpyxl')
             writer.book = book
-            df1 = pd.DataFrame(np.array(df1))
+            df1 = pd.DataFrame(np.array(res_data))
             df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
-                           "{}年家系号".format("21"), "性别"]
-            df1.to_excel(writer, "2021")  # first是第一张工作表名称
+                           "{}年家系号".format(str(f_year)[-2:]), "性别"]
+            df1.to_excel(writer, str(f_year))  # first是第一张工作表名称
             writer.save()
             writer.close()
+            cur_file = name_template.format(f_year)
+        return res_data
 
 
 @app.route('/generate_result')

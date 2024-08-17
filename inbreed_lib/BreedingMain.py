@@ -7,13 +7,15 @@
 import math
 import random
 import numpy as np
+import pandas as pd
+from openpyxl import load_workbook
 from inbreed_lib.graphfromtable import get_graph_from_data
 from inbreed_lib.selector.GASelector import GASelector
 from inbreed_lib.procedure.kinship_on_graph import Kinship
 from inbreed_lib.func import IDGenerator
 
 
-def run_main(file_path, gene_idx="20", result_file=None):
+def run_main(file_path, gene_idx=None, result_file=None):
     idgenarator = IDGenerator(end_number=int(gene_idx)*1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
     print(sheet_list)
@@ -28,7 +30,7 @@ def run_main(file_path, gene_idx="20", result_file=None):
     popus = []
     print("year idx", year2idx[gene_idx])
     # return
-    if gene_idx == "21":
+    if gene_idx == sheet_list[-1]:
         # print(vertex_layer)
         for idx, item in enumerate(vertex_layer[year2idx[gene_idx]]):
             print(vertex_list[item].name)
@@ -151,46 +153,35 @@ def run_n_generations(input_start, input_end, last_n):
     :param last_n: inbreeding last n year
     :return:
     """
-    layergraph, vertex_layer, vertex_list = get_graph_from_data(file_path="./历代配种方案及出雏对照2021_带性别.xlsx")
-    year2idx = {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
-    print("Load edges from", input_end)
-    popus = []
-    print("year idx", year2idx[input_end])
-    # return
+    input_file = "../temp_files/历代配种方案及出雏对照2021_带性别.xlsx"
+    name_tmplate = "../temp_files/历代配种方案及出雏对照2021_带性别{}.xlsx"
+    cur_file = input_file
+    res_data = None
+    for f_year in range(2017, 2018):
+        # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
 
-    # print(vertex_layer)
-    for idx, item in enumerate(vertex_layer[year2idx[input_end]]):
-        popus.append(vertex_list[item])
-        # popus.append(Poultry(fi=f_i, wi=wi, fa_i=fa_i, ma_i=ma_i, sex=0, inbreedc=0.))
+        res_data = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./test.csv")
 
-    kinship = Kinship(graph=layergraph)
-    random.shuffle(popus)
-    male_rate = 1. / 11.
-    male_num = math.ceil(male_rate * len(popus))
-    female_num = len(popus) - male_num
-    for i in range(male_num):
-        vertex_list[i].gender = 1
-        popus[i].sex = 1
-    name2idx = dict()
-    for i, p in enumerate(popus):
-        name2idx[p.name] = i
-    # -------------Kinship read and build-------------
-
-    kinship_matrix = np.zeros((male_num, female_num))
-    for i in range(male_num):
-        for j in range(female_num):
-            kinship_matrix[i][j] = kinship.calc_kinship_corr(p1=popus[i].name, p2=popus[male_num + j].name)
+        book = load_workbook(cur_file)
+        writer = pd.ExcelWriter(name_tmplate.format(f_year), engine='openpyxl')
+        writer.book = book
+        df1 = pd.DataFrame(np.array(res_data))
+        df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
+                       "{}年家系号".format(str(f_year)[-2:]), "性别"]
+        df1.to_excel(writer, str(f_year))  # first是第一张工作表名称
+        writer.save()
+        writer.close()
+        cur_file = name_tmplate.format(f_year)
+    return res_data
 
 
 if __name__ == '__main__':
     # for i in [17, 18, 19, 20]:
     #     run_main(gene_idx=str(i))
-    import pandas as pd
-    from openpyxl import load_workbook
     input_file = "../temp_files/历代配种方案及出雏对照2021_带性别.xlsx"
     name_tmplate = "../temp_files/历代配种方案及出雏对照2021_带性别{}.xlsx"
     cur_file = input_file
-    for f_year in range(20+1, 24+1):
+    for f_year in range(2017, 2018):
         # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
 
         df1 = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./test.csv")
@@ -200,8 +191,8 @@ if __name__ == '__main__':
         writer.book = book
         df1 = pd.DataFrame(np.array(df1))
         df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
-                       "{}年家系号".format("21"), "性别"]
-        df1.to_excel(writer, "2021")  # first是第一张工作表名称
+                       "{}年家系号".format(str(f_year)[-2:]), "性别"]
+        df1.to_excel(writer, str(f_year))  # first是第一张工作表名称
         writer.save()
         writer.close()
         cur_file = name_tmplate.format(f_year)
