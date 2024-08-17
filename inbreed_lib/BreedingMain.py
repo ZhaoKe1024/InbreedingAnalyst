@@ -14,10 +14,11 @@ from inbreed_lib.func import IDGenerator
 
 
 def run_main(file_path, gene_idx="20", result_file=None):
-    idgenarator = IDGenerator(end_number=20000, year=str(int(gene_idx) + 1))
+    idgenarator = IDGenerator(end_number=int(gene_idx)*1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
+    print(sheet_list)
     kinship = Kinship(graph=layergraph)
-    sheet_list += [str(int(sheet_list[-1])+1)]
+    sheet_list += [str(int(sheet_list[-1]) + 1)]
     print("Sheet list:", sheet_list)
     year2idx = {}  # {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
     for jdx, item in enumerate(sheet_list):
@@ -130,7 +131,8 @@ def run_main(file_path, gene_idx="20", result_file=None):
                    + tmp_fid + ","
                    + sex_id + '\n')
         print(tmp_fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
-        res_data.append(["", tmp_fid, cur_male_name, cur_female_name, f"{ibc:.4f}", child_id, sex_id])
+        res_data.append([tmp_fid, cur_male_name, cur_female_name, f"{ibc:.4f}", None, None, child_id, cur_male_name,
+                         cur_female_name, tmp_fid, sex_id])
         # >>>>>>> Stashed changes
         pre_pos = cur_male
         idx += 1
@@ -184,12 +186,22 @@ if __name__ == '__main__':
     # for i in [17, 18, 19, 20]:
     #     run_main(gene_idx=str(i))
     import pandas as pd
+    from openpyxl import load_workbook
+    input_file = "../temp_files/历代配种方案及出雏对照2021_带性别.xlsx"
+    name_tmplate = "../temp_files/历代配种方案及出雏对照2021_带性别{}.xlsx"
+    cur_file = input_file
+    for f_year in range(20+1, 24+1):
+        # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
 
-    df1 = run_main(file_path="../temp_files/历代配种方案及出雏对照2021_带性别.xlsx", gene_idx="21",
-                   result_file="./test.csv")
-    df1 = pd.read_csv("./test.csv", header=0, index_col=None)
-    writer = pd.ExcelWriter("../temp_files/历代配种方案及出雏对照2021_带性别_21.xlsx")
-    df1.to_excel(writer, "2021")  # first是第一张工作表名称
-    writer.save()
+        df1 = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./test.csv")
 
-    # print(np.random.randn(2, 10))
+        book = load_workbook(cur_file)
+        writer = pd.ExcelWriter(name_tmplate.format(f_year), engine='openpyxl')
+        writer.book = book
+        df1 = pd.DataFrame(np.array(df1))
+        df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
+                       "{}年家系号".format("21"), "性别"]
+        df1.to_excel(writer, "2021")  # first是第一张工作表名称
+        writer.save()
+        writer.close()
+        cur_file = name_tmplate.format(f_year)
