@@ -29,6 +29,7 @@ def generate_relation_plot(vertices_depth_edges, save_path="graph_with_edge_opti
     vertices = []
     # xy = []
     layers = set()
+    # print("------1---------")
     for obj_item in vertices_depth_edges:
         if not tuple_contrain(vertices, (obj_item[0][0], obj_item[0][1])):
             vertices.append((obj_item[0][0], obj_item[0][1]))
@@ -43,7 +44,9 @@ def generate_relation_plot(vertices_depth_edges, save_path="graph_with_edge_opti
     # print("点集:", len(vertices), vertices)
     # print("层数：", layers)
     # edges = [[]] * len(layers)
+    # print("------2---------")
     layers_tmp = [set() for _ in range(max(layers) + 1)]  # 不可以[set()]*(max(layers)+1)
+    # print("------3---------")
     # print(layers_tmp)
     # max_num_layer = 0
     for obj_item in vertices_depth_edges:
@@ -51,6 +54,7 @@ def generate_relation_plot(vertices_depth_edges, save_path="graph_with_edge_opti
             layers_tmp[obj_item[0][1]].add(obj_item[0])
         if obj_item[1] not in layers_tmp[obj_item[1][1]]:
             layers_tmp[obj_item[1][1]].add(obj_item[1])
+    # print("------4---------")
     # print("统计：")
     # for item in layers_tmp:
     #     print(item)
@@ -59,6 +63,7 @@ def generate_relation_plot(vertices_depth_edges, save_path="graph_with_edge_opti
     xy = []
     h_margin = 4
     v_margin = 8
+    # print("------5---------")
     for j, obj_item in enumerate(layers_tmp):
         nlist = sorted(list(obj_item), key=lambda x: x[0])
         # print(nlist)
@@ -66,6 +71,7 @@ def generate_relation_plot(vertices_depth_edges, save_path="graph_with_edge_opti
         for i, node in enumerate(nlist):
             graph_v.append(node[0])
             xy.append([j * h_margin, top_m + i * v_margin])
+    # print("------6---------")
     graph_e = []
     for obj_item in vertices_depth_edges:
         graph_e.append([obj_item[0][0], obj_item[1][0]])

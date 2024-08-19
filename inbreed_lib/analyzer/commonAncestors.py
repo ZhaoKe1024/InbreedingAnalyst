@@ -199,6 +199,8 @@ class FamilyAnalyzer(object):
         self.Result_ancestors_corrcoef = ""
         self.relagraph_ancestors_inbreed = []
         self.All_Egde_for_Visual = []
+        self.common_list = []
+        self.self_list = []
 
     def add_generation(self, new_vertices, new_parents):
         # 计数新的个体
@@ -476,6 +478,7 @@ class FamilyAnalyzer(object):
             #     self.Result_ancestors += self.__name(val) + ', '
             self.Result_ancestors += ",".join([self.__name(val) for val in common_ancestors])
             self.Result_ancestors += "]\n"
+            self.common_list = [self.__name(val) for val in common_ancestors]
         corr = 0.
         # return corr
         try:
@@ -528,16 +531,16 @@ class FamilyAnalyzer(object):
                 # print("------------------------------")
                 if pair_path_1 is not None:
                     for j in range(len(pair_path_1) - 1):
-                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_1[j]), self.__name(pair_depth_1[j])),
-                                                                          (self.__name(pair_path_1[j + 1]), self.__name(pair_depth_1[j + 1])))):
+                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_1[j]), pair_depth_1[j]),
+                                                                          (self.__name(pair_path_1[j + 1]), pair_depth_1[j + 1]))):
                             self.All_Egde_for_Visual.append(
-                                ((self.__name(pair_path_1[j]), self.__name(pair_depth_1[j])), (self.__name(pair_path_1[j + 1]), self.__name(pair_depth_1[j + 1]))))
+                                ((self.__name(pair_path_1[j]), pair_depth_1[j]), (self.__name(pair_path_1[j + 1]), pair_depth_1[j + 1])))
                 if pair_path_2 is not None:
                     for j in range(len(pair_path_2) - 1):
-                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_2[j]), self.__name(pair_depth_2[j])),
-                                                                          (self.__name(pair_path_2[j + 1]), self.__name(pair_depth_2[j + 1])))):
+                        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(pair_path_2[j]), pair_depth_2[j]),
+                                                                          (self.__name(pair_path_2[j + 1]), pair_depth_2[j + 1]))):
                             self.All_Egde_for_Visual.append(
-                                ((self.__name(pair_path_2[j]), self.__name(pair_depth_2[j])), (self.__name(pair_path_2[j + 1]), self.__name(pair_depth_2[j + 1]))))
+                                ((self.__name(pair_path_2[j]), pair_depth_2[j]), (self.__name(pair_path_2[j + 1]), pair_depth_2[j + 1])))
             # print("===========================")
 
         return res
@@ -560,14 +563,17 @@ class FamilyAnalyzer(object):
         d = self.inv_vertex_list[self.__invIdx(indi)].depth
         p1d = self.inv_vertex_list[self.__invIdx(parent[0])].depth
         p2d = self.inv_vertex_list[self.__invIdx(parent[1])].depth
-        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(indi), self.__name(d)), (self.__name(parent[0]), self.__name(p1d)))):
-            self.All_Egde_for_Visual.append(((self.__name(indi), self.__name(d)), (self.__name(parent[0]), self.__name(p1d))))
-        if not list_contrain(self.All_Egde_for_Visual, ((self.__name(indi), self.__name(d)), (self.__name(parent[1]), self.__name(p2d)))):
-            self.All_Egde_for_Visual.append(((self.__name(indi), self.__name(d)), (self.__name(parent[1]), self.__name(p2d))))
+        if not object_contrain(self.All_Egde_for_Visual, ((self.__name(indi), d), (self.__name(parent[0]), p1d))):
+            self.All_Egde_for_Visual.append(((self.__name(indi), d), (self.__name(parent[0]), p1d)))
+        if not list_contrain(self.All_Egde_for_Visual, ((self.__name(indi), d), (self.__name(parent[1]), p2d))):
+            self.All_Egde_for_Visual.append(((self.__name(indi), d), (self.__name(parent[1]), p2d)))
         # print(self.relagraph_ancestors_inbreed)
         if final == 0:
             print(f"{self.__name(indi)}的双亲:", [self.__name(val) for val in parent])
             self.Result_ancestors = f"个体 {self.__name(indi)} 的父母的编号:[{self.__name(parent[0])} 和 {self.__name(parent[1])}]。\n"
+            self.self_list.append(self.__name(indi))
+            self.self_list.append(self.__name(parent[0]))
+            self.self_list.append(self.__name(parent[1]))
         parent_kc = self.calc_kinship_corr(parent[0], parent[1], final=final + 1)
         if parent_kc < 1e-9:
             "parent 在没有近交系数的情况下，还需要计算一下家禽本身的近交系数，取继承"
@@ -614,11 +620,11 @@ def example_all():
 
 
 def add_list():
-    OL = [[1, 4], [2, 3]]
-    print(list_contrain(OL, [1, 3]))
-    print(list_contrain(OL, [2, 3]))
-    print(list_eq([2, 3], [2, 3]))
-    print(list_eq([2, 3], [1, 3]))
+    OL = [["1", "4"], ["2", "3"]]
+    print(list_contrain(OL, ["1", "3"]))
+    print(list_contrain(OL, ["2", "3"]))
+    print(list_eq(["2", "3"], ["2", "3"]))
+    print(list_eq(["2", "3"], ["1", "3"]))
 
 
 if __name__ == "__main__":
@@ -626,15 +632,18 @@ if __name__ == "__main__":
     # add_list()
     lg = get_instant_1()
     analyzer = FamilyAnalyzer(familyGraph=lg)
+
     # analyzer.calc_path_prob(16, 17, 0)
     # print(analyzer.calc_inbreed_coef(2))
     # print(analyzer.calc_inbreed_coef(9))
-    # print(analyzer.calc_inbreed_coef(26))
-    # print(analyzer.All_Egde_for_Visual)
+    print(analyzer.calc_inbreed_coef(26))
+    print(analyzer.All_Egde_for_Visual)
+
     analyzer.All_Egde_for_Visual = []
     print(analyzer.calc_kinship_corr(24, 25, final=0))
     print(analyzer.All_Egde_for_Visual)
     print("------------[0, 3, 5, 10, 12, 18, 19, 21]---------------")
+
     # for iten in analyzer.relagraph_ancestors_inbreed:
     #     print(iten)
     # print(analyzer.Result_ancestors)

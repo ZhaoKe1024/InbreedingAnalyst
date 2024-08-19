@@ -70,9 +70,9 @@ class IBCalculator(object):
         # self.show_text_func()
         # self.kinship = Kinship(file_path=self.file_to_analyze, graph=None)
         layergraph, vertex_layer, vertex_list, self.sheet_list = get_graph_from_data(file_path=self.file_to_analyze)
+        print("sheet list:", self.sheet_list)
         try:
-            self.sheet_list = [int(item) for item in self.sheet_list]
-            self.max_year = self.sheet_list[-1]
+            self.max_year = int(self.sheet_list[-1])
         except Exception as e:
             print(e)
             print("sheet名字不是数值字符串，出现非数字，请仔细检查并重新设置名字。")
@@ -109,9 +109,11 @@ class IBCalculator(object):
         try:
             self.kinship.analyzer.All_Egde_for_Visual = []
             res = self.kinship.calc_inbreed_coef(p=ct)
-            # print(res)
+            # print("result:", res)
             print(self.kinship.analyzer.get_just_message())
+            # print("---------------")
             save_path = save_dir + "inbrcoef_{}.html".format(get_cur_timestr())
+            # print("---------------")
             vset, eset, posset = generate_relation_plot(self.kinship.analyzer.All_Egde_for_Visual, save_path=save_path)
         except NullNameException as e:
             logging.exception(e)
@@ -119,12 +121,11 @@ class IBCalculator(object):
 
     def evaluate_solution(self):
         self.check_kinship()
-        sheet_list = ["16", "17", "18", "19", "20"]
         file_names = []
         # res_data = []
         print("评估：", self.file_to_evaluate)
         ts = get_cur_timestr()
-        for sheet_name in sheet_list[1:]:
+        for sheet_name in self.sheet_list[1:]:
             edges_df = get_df_from_xlsx(filepath=self.file_to_evaluate, sheet_name=sheet_name,
                                         cols=[1, 2, 3])
             with open(self.file_root + "evaluate_{}_{}.csv".format(ts, sheet_name), 'w', encoding="utf_8") as fout:
@@ -253,11 +254,14 @@ def calculate():
             raise Exception("Error Unknown Method, only support \'GET\' or \'POST\'.")
         if mode == "single":
             res, vset, eset, posset = calc.calc_inbrcoef(ct=p)
+            print("/calc:result, ", res, vset)
         elif mode == "double":
             res, vset, eset, posset = calc.calc_corrcoef(p1=p1, p2=p2)
         else:
             raise Exception("Error mode, only support \'single\' or \'double\'.")
-        return jsonify(response={"res": res, "vset": vset, "eset": eset, "posset": posset,
+        return jsonify(response={"res": res, "selfv": calc.kinship.analyzer.self_list,
+                                 "commonv": calc.kinship.analyzer.common_list,
+                                 "vset": vset, "eset": eset, "posset": posset,
                                  "log": calc.kinship.analyzer.get_just_message()})
         # json_tosave = {}
         # for key in info_table:
@@ -288,7 +292,7 @@ def generate_new():
 
         calc.generated_file = None
         result_file_name = f"result_name_rand_{t_year}.csv"
-        res_data = run_main(file_path=calc.file_to_analyze, gene_idx=t_year, result_file=calc.file_root + result_file_name)
+        res_data = run_main(file_path=calc.file_to_analyze, gene_idx=str(t_year), result_file=calc.file_root + result_file_name)
         calc.generated_file = calc.file_root + result_file_name
         return jsonify(
             {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
@@ -312,7 +316,9 @@ def generate_new():
             writer.save()
             writer.close()
             cur_file = name_template.format(f_year)
-        return res_data
+        calc.generated_file = calc.file_root + cur_file
+        return jsonify(
+            {"flag": 0, "fname": cur_file, "data": res_data, "msg": "生成结果文件：{}".format(cur_file)})
 
 
 @app.route('/generate_result')

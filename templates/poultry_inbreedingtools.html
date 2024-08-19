@@ -30,13 +30,19 @@
 	</head>
 
 	<body>
-		<h1 style="margin: 10px;">上传</h1>
+		<p>请首先上传并分析文件</p>
+		<p>注意：分析文件为Xls或Xlsx格式的Excel文件，且每一个sheet的名字都是整数数字(年份)。</p>
+		<h2 style="margin: 10px;">上传</h2>
 		<div style="border: 2px solid #000000; width: 300px; border-radius: 5px; padding: 5px; margin: 20px;">
-			<form method="post" enctype="multipart/form-data" action="/analyse">
-				<input class="form-control" type="file" name="file_data"><br />
+			<p>请先选中文件然后分析</p>
+			<form method="post" enctype="multipart/form-data" action="/analyse" onsubmit="return checkForm()">
+				<input id="choosefile" class="form-control" type="file" name="file_data"><br />
 				<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
-				<input type="submit" value="提交">
+				<input type="submit" value="分析" >
 			</form>
+		</div>
+		<div id="upload_msg">
+
 		</div>
 		<!-- <form method="POST" enctype="multipart/form-data">
 			{{ form.csrf_token }}
@@ -73,6 +79,13 @@
 				</div>
 			</div>
 			<textarea name="" id="calculate_result" cols="30" rows="10" style="width: 300px; height: 100px;"></textarea>
+			<div id="p-color" , style="display: none;">
+				<span style="background-color: #55ff7f;">自己与父母为绿色</span>
+				<span></span>
+				<span style="background-color: #ff6e6e;">共同祖先红色</span>
+				<span></span>
+				<span style="background-color: #55aaff;">其他蓝色</span>
+			</div>
 			<div id="includefooter"></div>
 		</div>
 		<h2 style="margin: 10px;">评估上传方案</h2>
@@ -98,14 +111,14 @@
 			<!-- <input type="text" id="t_year" /><input type="text" id="t_year" /> -->
 			<br>
 			<input type="submit" value="提交" onclick="generate_new_solution()" />
-			<span id="download_gene" >
-				
+			<span id="download_gene">
+
 			</span>
 			<div id="generated_res">
 				<table id="generated_table" width="800px" height="60px">
 					<tbody id="gene_table">
 						<thead id="genenewhead"></thead>
-						<tbody id="genefilebody"></tbody>
+					<tbody id="genefilebody"></tbody>
 					</tbody>
 				</table>
 			</div>
@@ -113,6 +126,16 @@
 	</body>
 
 	<script type="text/javascript">
+		
+		function checkForm(){
+			if(!document.getElementById("choosefile").value != ""){
+				alert("请先选中文件！");
+				return false;
+			}else{
+				document.getElementById("upload_msg").innerText = "已选中文件："+document.getElementById("choosefile").value;
+				return true;
+			}
+		}
 		// clientSideInclude("includefooter", "../static/temp_files/inbrcoef_202408021556.html");
 		String.prototype.format = function() {
 			if (arguments.length == 0) {
@@ -123,54 +146,57 @@
 			}
 			return s;
 		};
-		
-		 function rgbToHex(r, g, b){
-		    var hex = ((r << 16) | (g << 8) | b).toString(16);
-		    return "#" + new Array(Math.abs(hex.length - 7)).join("0") + hex;
-		 }
-		 // hex to rgb
-		 function hexToRgb(hex){
-		     var rgb = [];
-		     for (var i = 1; i < 7; i += 2){
-		        rgb.push(parseInt("0x" + hex.slice(i, i + 2)));
-		     }
-		     return rgb;
-		 }
-		 // 计算渐变过渡色
-		 function gradient(startColor, endColor, step){
-		    // 将 hex 转换为rgb
-		     var sColor = hexToRgb(startColor),
-		     eColor = hexToRgb(endColor);
-		  
-		    // 计算R\G\B每一步的差值
-		    var rStep = (eColor[0] - sColor[0]) / step,
-		        gStep = (eColor[1] - sColor[1]) / step,
-		        bStep = (eColor[2] - sColor[2]) / step;
-		  
-		    var gradientColorArr = [];
-		    for (var i = 0;i < step;i++){
-		        // 计算每一步的hex值
-		        gradientColorArr.push(rgbToHex(parseInt(rStep * i + sColor[0]), parseInt(gStep * i + sColor[1]), parseInt(bStep * i + sColor[2])));
-		    }
-		    return gradientColorArr;
-		}
-		 
-		// 测试
-		var colorArr = gradient('#0082FF', '#FF4A66', 10);  
 		/*
-		就得到了分割了10份的色值数组
-		 [ '#0082ff',
-		  '#197cef',
-		  '#3376e0',
-		  '#4c71d1',
-		  '#666bc1',
-		  '#7f66b2',
-		  '#9960a3',
-		  '#b25a93',
-		  '#cc5584',
-		  '#e54f75' ]
+				function rgbToHex(r, g, b) {
+					// var hex = ((r </< 16) | (g </< 8) | b).toString(16);  # I have to
+					var hex = ((r * 2 ** 4) | (g * 2 ** 3) | b).toString(16);
+					return "#" + new Array(Math.abs(hex.length - 7)).join("0") + hex;
+				}
+				// hex to rgb
+				function hexToRgb(hex) {
+					var rgb = [];
+					for (var i = 1; i < 7; i += 2) {
+						rgb.push(parseInt("0x" + hex.slice(i, i + 2)));
+					}
+					return rgb;
+				}
+				// 计算渐变过渡色
+				function gradient(startColor, endColor, step) {
+					// 将 hex 转换为rgb
+					var sColor = hexToRgb(startColor),
+						eColor = hexToRgb(endColor);
+
+					// 计算R\G\B每一步的差值
+					var rStep = (eColor[0] - sColor[0]) / step,
+						gStep = (eColor[1] - sColor[1]) / step,
+						bStep = (eColor[2] - sColor[2]) / step;
+
+					var gradientColorArr = [];
+					for (var i = 0; i < step; i++) {
+						// 计算每一步的hex值
+						gradientColorArr.push(rgbToHex(parseInt(rStep * i + sColor[0]), parseInt(gStep * i + sColor[1]), parseInt(
+							bStep * i + sColor[2])));
+					}
+					return gradientColorArr;
+				}
+				// 测试
+				var colorArr = gradient('#0082FF', '#FF4A66', 10);
 		*/
-		
+		/**/
+		就得到了分割了10份的色值数组
+		var colorArr = ['#0082ff',
+			'#197cef',
+			'#3376e0',
+			'#4c71d1',
+			'#666bc1',
+			'#7f66b2',
+			'#9960a3',
+			'#b25a93',
+			'#cc5584',
+			'#e54f75'
+		]
+
+
 
 		function showcalcdiv1() {
 			console.log("click1");
@@ -200,10 +226,15 @@
 					var vset = resp["vset"];
 					var eset = resp["eset"];
 					var posset = resp["posset"];
+					var commonv = resp["commonv"];
+					var selfv = resp["selfv"];
 					msg = resp["log"];
 					console.log(`结果:${resp["res"]}`);
 					document.getElementById("calculate_result").innerText = resp["res"] + "\n" + resp["log"];
-					setRelationGraph(vset, eset, posset);
+					console.log(vset);
+					console.log(eset);
+					console.log(posset);
+					setRelationGraph(vset, eset, posset, selfv, commonv);
 				}
 			};
 			xhr.send();
@@ -225,16 +256,28 @@
 					var vset = resp["vset"];
 					var eset = resp["eset"];
 					var posset = resp["posset"];
+					var commonv = resp["commonv"];
+					var selfv = resp["selfv"];
 					msg = resp["log"];
 					console.log(`结果:${resp["res"]}`);
 					document.getElementById("calculate_result").innerText = resp["res"] + "\n" + resp["log"];
-					setRelationGraph(vset, eset, posset);
+					setRelationGraph(vset, eset, posset, selfv, commonv);
 				}
 			};
 			xhr.send();
 		}
 
-		function setRelationGraph(vset, eset, xy) {
+		function inList(v, L) {
+			for (let i = 0; i < L.length; i++) {
+				if (v == L[i]) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		function setRelationGraph(vset, eset, xy, selfv, commonv) {
+			document.getElementById('p-color').style.display = "block";
 			document.getElementById('includefooter').style.height = "50vh";
 			var myChart = echarts.init(document.getElementById('includefooter'));
 			// console.log(vset);
@@ -242,10 +285,19 @@
 			// console.log(xy);
 			var input_data = new Array();
 			for (let i = 0; i < vset.length; i++) {
+				var co = "#55aaff";
+				if (selfv.indexOf(vset[i] + "") > -1) {
+					co = "#55ff7f";
+				} else if (commonv.indexOf(vset[i] + "") > -1) {
+					co = "#ff6e6e";
+				}
 				input_data.push({
 					name: vset[i] + "",
 					x: xy[i][0] * 3,
-					y: xy[i][1] * 1
+					y: xy[i][1] * 1,
+					itemStyle: {
+						color: co
+					}
 				});
 			}
 			var input_edge = new Array();
@@ -355,50 +407,50 @@
 				setRelationGraph(test_vset, test_eset, test_xy);*/
 
 		function evaluate_resolution() {
-			const fileInput = document.getElementById('evalfile');  
+			const fileInput = document.getElementById('evalfile');
 			const file = fileInput.files[0]; // 获取文件  
-			if (!file) {  
-			        alert('请选择一个文件');  
-			        return;  
+			if (!file) {
+				alert('请选择一个文件');
+				return;
 			}
 			var formData = new FormData();
 			formData.append("file_data", file);
 			console.log(formData);
 			fetch("/eval", {
-				method: 'POST',
-				// headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-				body: formData,
-			}).then(response => {
-				if (!response.ok) {
-					throw new Error('文件上传失败');
-				}
-				return response.json();
-			}).then(data => {
-				// 在这里处理你的数据  
-				console.log(data["msg"]);
-				console.log(data["file_list"]);
-				document.getElementById("eval_res").style.display="block";
-				var fnames = data["file_list"];
-				var fs_str = "";
-				
-				for (let j = 0; j < fnames.length; j++) {
-					fs_str += "<tr>";
-					fs_str += "<td><input type=\"button\" value=\"点击显示表格\" onclick=\"get_evaled_data(\'" + fnames[j] +
-						"\')\"/></td>";
-					var dyn_url = "/get_evaled_file?callf="+fnames[j];
-					
-					fs_str += "<td><input type=\"button\" value=\"点击下载表格\" onclick=\"get_evaled_file(\'" + fnames[j] +
-						"\')\"/></td>";
-					fs_str += "</tr>";
-				}
-				document.getElementById("eval_fs").innerHTML = fs_str;
-				// // 假设你想把数据显示在页面上的某个元素中  
-				// document.getElementById('someElementId').innerText = data.someKey;
-			})
-			.catch(error => {
-				// 处理请求失败的情况  
-				console.error('There was a problem with your fetch operation:', error);
-			});
+					method: 'POST',
+					// headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+					body: formData,
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('文件上传失败');
+					}
+					return response.json();
+				}).then(data => {
+					// 在这里处理你的数据  
+					console.log(data["msg"]);
+					console.log(data["file_list"]);
+					document.getElementById("eval_res").style.display = "block";
+					var fnames = data["file_list"];
+					var fs_str = "";
+
+					for (let j = 0; j < fnames.length; j++) {
+						fs_str += "<tr>";
+						fs_str += "<td><input type=\"button\" value=\"点击显示表格\" onclick=\"get_evaled_data(\'" + fnames[j] +
+							"\')\"/></td>";
+						var dyn_url = "/get_evaled_file?callf=" + fnames[j];
+
+						fs_str += "<td><input type=\"button\" value=\"点击下载表格\" onclick=\"get_evaled_file(\'" + fnames[j] +
+							"\')\"/></td>";
+						fs_str += "</tr>";
+					}
+					document.getElementById("eval_fs").innerHTML = fs_str;
+					// // 假设你想把数据显示在页面上的某个元素中  
+					// document.getElementById('someElementId').innerText = data.someKey;
+				})
+				.catch(error => {
+					// 处理请求失败的情况  
+					console.error('There was a problem with your fetch operation:', error);
+				});
 			/*var xhr = new XMLHttpRequest();
 			var URL_v = "eval"
 			xhr.open("POST", URL_v);
@@ -447,16 +499,16 @@
 
 		function get_evaled_file(fname) {
 			// 构造下载URL  
-			const url = '/get_evaled_file/' + encodeURIComponent(fname);  
-		  
+			const url = '/get_evaled_file/' + encodeURIComponent(fname);
+
 			// 创建一个a标签  
-			const a = document.createElement('a');  
-			a.href = url;  
+			const a = document.createElement('a');
+			a.href = url;
 			// 这里不需要设置download属性，因为Flask的send_file已经会处理  
-			a.style.display = 'none';  
-			document.body.appendChild(a);  
-			a.click();  
-			document.body.removeChild(a);  
+			a.style.display = 'none';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
 			// var xhr = new XMLHttpRequest();
 			// var URL_v = "get_evaled_file?callf=" + fname;
 			// xhr.open("GET", URL_v, true);
@@ -487,10 +539,11 @@
 			for (var i = 0; i < table_data.length; i++) {
 				tdstr += '<tr>';
 				var L = table_data[i].length;
-				for (let j = 0; j < L-1; j++) {
+				for (let j = 0; j < L - 1; j++) {
 					tdstr += '<td width=80px>' + table_data[i][j] + '</td>';
 				}
-				tdstr += '<td width=80px style=\"background-color: '+colorArr[parseInt(parseFloat(table_data[i][L-1])*10)]+'\">' + table_data[i][L-1] + '</td>';
+				tdstr += '<td width=80px style=\"background-color: ' + colorArr[parseInt(parseFloat(table_data[i][L - 1]) *
+					10)] + '\">' + table_data[i][L - 1] + '</td>';
 				tdstr += '</tr>';
 			}
 			showfilebody.innerHTML = tdstr;
@@ -517,11 +570,13 @@
 					// console.log(`结果:${response["res"]}`);
 					// document.getElementById("calculate_result").innerText = response["res"] + "\n" + response["log"];
 					// var showfilehead = document.getElementById('genefilehead').style.display = "block";
-					
-					document.getElementById("download_gene").innerHTML = "<input type=\"button\" value=\"点击下载方案\" onclick=\"get_evaled_file(\'" + fname +
+
+					document.getElementById("download_gene").innerHTML =
+						"<input type=\"button\" value=\"点击下载方案\" onclick=\"get_evaled_file(\'" + fname +
 						"\')\"/>";
-					var showfilehead = document.getElementById('evalfilehead');
-					showfilehead.innerHTML = "<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th><th>幼崽翅号</th><th>幼崽性别</th>";
+					var showfilehead = document.getElementById('genenewhead');
+					showfilehead.innerHTML =
+						"<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th><th>幼崽翅号</th><th>幼崽性别</th>";
 					setRelationTable(data, "genefilebody");
 				}
 			};
