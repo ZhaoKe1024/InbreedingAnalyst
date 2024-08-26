@@ -477,8 +477,10 @@ class FamilyAnalyzer(object):
             # for val in common_ancestors:
             #     self.Result_ancestors += self.__name(val) + ', '
             self.Result_ancestors += ",".join([self.__name(val) for val in common_ancestors])
-            self.Result_ancestors += "]\n"
+            self.Result_ancestors += "]<br>"
             self.common_list = [self.__name(val) for val in common_ancestors]
+        if final == 0:
+            self.self_list = [self.__name(ind1), self.__name(ind2)]
         corr = 0.
         # return corr
         try:
@@ -491,11 +493,11 @@ class FamilyAnalyzer(object):
         inb1 = self.calc_inbreed_coef(ind1, final=final + 1)
         inb2 = self.calc_inbreed_coef(ind2, final=final + 1)
         if final in [0, 1]:
-            self.Result_ancestors += f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的近交系数分别为：{inb1}, {inb2}。\n"
+            self.Result_ancestors += f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的近交系数分别为：{inb1}, {inb2}。<br>"
             self.Result_ancestors += f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的亲缘相关系数："
         res = corr / math.sqrt((1 + inb1) * (1 + inb2))
         if final in [0, 1]:
-            self.Result_ancestors += str(res) + '\n'
+            self.Result_ancestors += str(res) + '<br>'
         # print(self.Result_ancestors)
 
         # =================================
@@ -570,10 +572,8 @@ class FamilyAnalyzer(object):
         # print(self.relagraph_ancestors_inbreed)
         if final == 0:
             print(f"{self.__name(indi)}的双亲:", [self.__name(val) for val in parent])
-            self.Result_ancestors = f"个体 {self.__name(indi)} 的父母的编号:[{self.__name(parent[0])} 和 {self.__name(parent[1])}]。\n"
-            self.self_list.append(self.__name(indi))
-            self.self_list.append(self.__name(parent[0]))
-            self.self_list.append(self.__name(parent[1]))
+            self.Result_ancestors = f"个体 {self.__name(indi)} 的父母的编号:[{self.__name(parent[0])} 和 {self.__name(parent[1])}]。<br>"
+            self.self_list = [self.__name(indi), self.__name(parent[0]), self.__name(parent[1])]
         parent_kc = self.calc_kinship_corr(parent[0], parent[1], final=final + 1)
         if parent_kc < 1e-9:
             "parent 在没有近交系数的情况下，还需要计算一下家禽本身的近交系数，取继承"
