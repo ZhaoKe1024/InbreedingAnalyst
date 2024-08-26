@@ -291,6 +291,17 @@ def calculate():
         return jsonify(response=response)
 
 
+@app.route("/get_freshed_data")
+def get_refresh_data():
+    if calc.file_to_analyze is not None:
+        print("fname:", calc.file_to_analyze)
+        return jsonify({"flag": 0, "fname": calc.file_to_analyze.split('/')[-1], "years": calc.sheet_list})
+
+    else:
+        print("fname:", calc.file_to_analyze)
+        return jsonify({"flag": -1, "fname": None, "msg": "请选按照模板分上传文件"})
+
+
 @app.route('/generate')
 def generate_new():
     if calc.file_to_analyze is None:

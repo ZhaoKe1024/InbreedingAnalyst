@@ -38,7 +38,7 @@
 			<form method="post" enctype="multipart/form-data" action="/analyse" onsubmit="return checkForm()">
 				<input id="choosefile" class="form-control" type="file" name="file_data"><br />
 				<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
-				<input type="submit" value="分析">
+				<input type="submit" value="分析"> <input type="button" value="刷新" onclick="refresh()"> 
 			</form>
 		</div>
 		<div id="upload_msg">
@@ -250,14 +250,36 @@
 			xhr.send();
 		}
 
-		function inList(v, L) {
-			for (let i = 0; i < L.length; i++) {
-				if (v == L[i]) {
-					return true;
+		function refresh(){
+			var xhr = new XMLHttpRequest();
+			var URL_v = "get_freshed_data";
+			xhr.open("GET", URL_v, true);
+			// xhr.setRequestHeader('Content-Type','application/json');
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					var resp_file = response["fname"];
+					var resp_years = response["years"];
+					// var evaled_table = resp["data"];
+					var showmsg = "";
+					if (response["flag"] == 0){
+						showmsg += "已选中文件：" + resp_file + "。</br>包含年份：[";
+						for(let j=0;j<resp_years.length; j++){
+							showmsg += parseInt(resp_years[j])+","
+						}
+						showmsg += "]"
+					}else{
+						showmsg += response["msg"];
+					}
+					
+					var showfilehead = document.getElementById("upload_msg");
+					
+					showfilehead.innerHTML = showmsg;
 				}
-			}
-			return false;
+			};
+			xhr.send();
 		}
+		
 
 		function setRelationGraph(vset, eset, xy, selfv, commonv) {
 			document.getElementById('p-color').style.display = "block";
