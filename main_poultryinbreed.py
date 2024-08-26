@@ -124,12 +124,13 @@ class IBCalculator(object):
     def evaluate_solution(self):
         self.check_kinship()
         file_names = []
-        # res_data = []
+        res_years = []
         print("评估：", self.file_to_evaluate)
         ts = get_cur_timestr()
         for sheet_name in self.sheet_list[1:]:
             edges_df = get_df_from_xlsx(filepath=self.file_to_evaluate, sheet_name=sheet_name,
                                         cols=[1, 2, 3])
+            res_years.append(sheet_name)
             with open(self.file_root + "evaluate_{}_{}.csv".format(ts, sheet_name), 'w', encoding="utf_8") as fout:
                 fout.write("家系号,公号,母号,亲缘相关系数\n")
                 for idx, row in enumerate(edges_df.itertuples()):
@@ -139,7 +140,7 @@ class IBCalculator(object):
                     fout.write(f"{row[1]},{row[2]},{row[3]}," + ibc + '\n')
             print(f"表格sheet{sheet_name} 评估完成！")
             file_names.append("evaluate_{}_{}.csv".format(ts, sheet_name))
-        return file_names  # , res_data
+        return res_years, file_names
 
 
 calc = IBCalculator()
@@ -388,12 +389,12 @@ def eval_old():
         file.save(calc.file_root + file_save_name)
         print("文件上传成功")
         calc.file_to_evaluate = calc.file_root + file_save_name
-        result_files = calc.evaluate_solution()
+        years, result_files = calc.evaluate_solution()
         res_msg = ""
         for j, iten in enumerate(result_files):
             res_msg += "(" + str(j + 1) + ") " + iten + "\n"
-        return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "file_list": result_files}), 200
-    return jsonify({'error': '未知错误'}), 500
+        return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "years": years, "file_list": result_files}), 200
+    return jsonify({"flag": -1,'error': '未知错误'}), 500
 
 
 if __name__ == '__main__':

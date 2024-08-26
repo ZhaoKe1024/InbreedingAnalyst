@@ -89,7 +89,7 @@
 			<div id="includefooter"></div>
 		</div>
 		<h2 style="margin: 10px;">评估上传方案</h2>
-		<div style="border: 2px solid #000000; border-radius: 5px; width: 300px; margin: 20px;">
+		<div style="border: 2px solid #000000; border-radius: 5px; width: 800px; margin: 20px;">
 			<input class="form-control" type="file" name="file_data" id="evalfile"><br />
 			<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
 			<input type="submit" value="提交" onclick="evaluate_resolution()">
@@ -98,7 +98,7 @@
 				<table border="" cellspacing="" cellpadding="">
 					<tbody id="eval_fs"></tbody>
 				</table>
-				<table id="eval_table">
+				<table id="eval_table" width="500px" height="60px">
 					<thead id="evalfilehead"></thead>
 					<tbody id="evalfilebody"></tbody>
 				</table>
@@ -435,11 +435,13 @@
 					console.log(data["msg"]);
 					console.log(data["file_list"]);
 					document.getElementById("eval_res").style.display = "block";
+					var fyears = data["years"];
 					var fnames = data["file_list"];
-					var fs_str = "";
+					var fs_str = "<tr><th>年份</th><th>表格显示</th><th>表格下载</th></tr>";
 
 					for (let j = 0; j < fnames.length; j++) {
 						fs_str += "<tr>";
+						fs_str += "<td>"+fyears[j]+"</td>";
 						fs_str += "<td><input type=\"button\" value=\"点击显示表格\" onclick=\"get_evaled_data(\'" + fnames[j] +
 							"\')\"/></td>";
 						var dyn_url = "/get_evaled_file?callf=" + fnames[j];
@@ -561,8 +563,44 @@
 				// console.log(table_data[i][L - 1]);
 				// console.log(parseInt(parseFloat(table_data[i][L - 1]) * 10));
 				// console.log(colorArr[parseInt(parseFloat(table_data[i][L - 1]) * 10)]);
-				tdstr += '<td width=80px style=\"background-color: ' + colorArr[parseInt(parseFloat(table_data[i][L - 1]) *
+				tdstr += '<td width=70px style=\"background-color: ' + colorArr[parseInt(parseFloat(table_data[i][L - 1]) *
 					10)] + '\">' + table_data[i][L - 1] + '</td>';
+				tdstr += '</tr>';
+			}
+			showfilebody.innerHTML = tdstr;
+		}
+		
+		function setRelationTable1(table_data, div_id) {
+			var showfilebody = document.getElementById(div_id);
+			const colorArr = ['#0082ff',
+				'#197cef',
+				'#3376e0',
+				'#4c71d1',
+				'#666bc1',
+				'#7f66b2',
+				'#9960a3',
+				'#b25a93',
+				'#cc5584',
+				'#e54f75'
+			]
+			var tdstr = "";
+			for (var i = 0; i < table_data.length; i++) {
+				tdstr += '<tr>';
+				tdstr += '<td width=80px>' + table_data[i][0] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][1] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][2] + '</td>';
+				tdstr += '<td width=80px style=\"background-color: ' + colorArr[parseInt(parseFloat(table_data[i][3]) *
+					10)] + '\">' + table_data[i][3] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][6] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][7] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][8] + '</td>';
+				tdstr += '<td width=80px>' + table_data[i][9] + '</td>';
+				if(parseInt(table_data[i][10])==0){
+					tdstr += '<td width=30px style=\"background-color: #e54f75\">雌</td>';
+				}else{
+					tdstr += '<td width=30px style=\"background-color: #0082ff\">雄</td>';
+				}
+				
 				tdstr += '</tr>';
 			}
 			showfilebody.innerHTML = tdstr;
@@ -595,8 +633,8 @@
 						"\')\"/>";
 					var showfilehead = document.getElementById('genenewhead');
 					showfilehead.innerHTML =
-						"<th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th><th>幼崽翅号</th><th>幼崽性别</th>";
-					setRelationTable(data, "genefilebody");
+						"<tr><th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th><th>幼崽翅号</th><th>公禽号</th><th>母禽号</th><th>家系号</th><th>幼崽性别</th><tr>";
+					setRelationTable1(data, "genefilebody");
 				}
 			};
 			xhr.send();
