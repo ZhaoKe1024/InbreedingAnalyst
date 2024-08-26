@@ -18,10 +18,10 @@ from inbreed_lib.func import IDGenerator
 def run_main(file_path, gene_idx=None, result_file=None):
     idgenarator = IDGenerator(end_number=int(gene_idx)*1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
-    print(sheet_list)
+    # print(sheet_list)
     kinship = Kinship(graph=layergraph)
     sheet_list += [str(int(sheet_list[-1]) + 1)]
-    print("Sheet list:", sheet_list)
+    # print("Sheet list:", sheet_list)
     year2idx = {}  # {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
     for jdx, item in enumerate(sheet_list):
         year2idx[item] = jdx
@@ -79,8 +79,8 @@ def run_main(file_path, gene_idx=None, result_file=None):
 
     pre_pos = best_solution.vector_male[0]
     cur_female = best_solution.vector_female[0]
-    print("========----------育种方案----------==========")
-    print("(家系号，雄性个体编号, 雌性个体编号)]")
+    # print("========----------育种方案----------==========")
+    # print("(家系号，雄性个体编号, 雌性个体编号)]")
     idx = 1
     fout = open(result_file, 'w', encoding="utf_8")
     fout.write(
@@ -132,13 +132,13 @@ def run_main(file_path, gene_idx=None, result_file=None):
                    + popus[male_num + cur_female].name + ","  # col 10 母号
                    + tmp_fid + ","
                    + sex_id + '\n')
-        print(tmp_fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
+        # print(tmp_fid + "," + cur_male_name + "," + cur_female_name + "," + f"{ibc:.5f}")
         res_data.append([tmp_fid, cur_male_name, cur_female_name, f"{ibc:.4f}", None, None, child_id, cur_male_name,
                          cur_female_name, tmp_fid, sex_id])
         # >>>>>>> Stashed changes
         pre_pos = cur_male
         idx += 1
-    print("]")
+    # print("]")
     fout.write('\n')
     fout.close()
     print(f"generate finished gene {gene_idx}")

@@ -73,6 +73,7 @@ class IBCalculator(object):
         print("sheet list:", self.sheet_list)
         try:
             self.max_year = int(self.sheet_list[-1])
+            print("the max year of this file:", self.max_year)
         except Exception as e:
             print(e)
             print("sheet名字不是数值字符串，出现非数字，请仔细检查并重新设置名字。")
@@ -117,6 +118,7 @@ class IBCalculator(object):
             vset, eset, posset = generate_relation_plot(self.kinship.analyzer.All_Egde_for_Visual, save_path=save_path)
         except NullNameException as e:
             logging.exception(e)
+            return -1, None, None, None
         return res, vset, eset, posset
 
     def evaluate_solution(self):
@@ -252,14 +254,23 @@ def calculate():
 
         else:
             raise Exception("Error Unknown Method, only support \'GET\' or \'POST\'.")
+        error_msg = None
         if mode == "single":
             res, vset, eset, posset = calc.calc_inbrcoef(ct=p)
             print("/calc:result, ", res, vset)
+            error_msg = "不存在编号为{}的个体".format(p)
         elif mode == "double":
             res, vset, eset, posset = calc.calc_corrcoef(p1=p1, p2=p2)
+            error_msg = "输入了不存在的编号"
         else:
             raise Exception("Error mode, only support \'single\' or \'double\'.")
-        return jsonify(response={"res": res, "selfv": calc.kinship.analyzer.self_list,
+        if res == -1:
+            return jsonify(response={"res": res, "selfv": [],
+                                     "commonv": [],
+                                     "vset": [], "eset": [], "posset": [],
+                                     "log": error_msg})
+        else:
+            return jsonify(response={"res": res, "selfv": calc.kinship.analyzer.self_list,
                                  "commonv": calc.kinship.analyzer.common_list,
                                  "vset": vset, "eset": eset, "posset": posset,
                                  "log": calc.kinship.analyzer.get_just_message()})
@@ -297,14 +308,14 @@ def generate_new():
         return jsonify(
             {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
     else:
-        assert calc.max_year+2 < t_year+1, "max_year:{} t_year:{}".format(calc.max_year+2, t_year+1)
+        assert calc.max_year+1 < t_year+1, "max_year:{} t_year:{}".format(calc.max_year+2, t_year+1)
         cur_file = calc.file_to_analyze
-        name_template = save_dir + "result_name_rand_{}.csv"
+        name_template = save_dir + "result_name_rand_{}.xlsx"
         res_data = None
-        for f_year in range(calc.max_year+2, t_year+1):
+        for f_year in range(calc.max_year+1, t_year+1):
             # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
-
-            res_data = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./test.csv")
+            print("open new csv file:", "./result_name_rand_{}.csv".format(f_year))
+            res_data = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./result_name_rand_{}.csv".format(f_year))
 
             book = load_workbook(cur_file)
             writer = pd.ExcelWriter(name_template.format(f_year), engine='openpyxl')
@@ -318,7 +329,7 @@ def generate_new():
             cur_file = name_template.format(f_year)
         calc.generated_file = calc.file_root + cur_file
         return jsonify(
-            {"flag": 0, "fname": cur_file, "data": res_data, "msg": "生成结果文件：{}".format(cur_file)})
+            {"flag": 0, "fname": cur_file.split('/')[-1], "data": res_data, "msg": "生成结果文件：{}".format(cur_file)})
 
 
 @app.route('/generate_result')

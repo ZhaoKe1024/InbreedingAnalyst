@@ -38,7 +38,7 @@
 			<form method="post" enctype="multipart/form-data" action="/analyse" onsubmit="return checkForm()">
 				<input id="choosefile" class="form-control" type="file" name="file_data"><br />
 				<!-- <input type="text" name="year" placeholder="输入目标年份"/><br /> -->
-				<input type="submit" value="分析" >
+				<input type="submit" value="分析">
 			</form>
 		</div>
 		<div id="upload_msg">
@@ -116,9 +116,8 @@
 			</span>
 			<div id="generated_res">
 				<table id="generated_table" width="800px" height="60px">
-					<tbody id="gene_table">
-						<thead id="genenewhead"></thead>
-					<tbody id="genefilebody"></tbody>
+					<thead id="genenewhead"></thead>
+					<tbody id="genefilebody">
 					</tbody>
 				</table>
 			</div>
@@ -126,13 +125,12 @@
 	</body>
 
 	<script type="text/javascript">
-		
-		function checkForm(){
-			if(!document.getElementById("choosefile").value != ""){
+		function checkForm() {
+			if (!document.getElementById("choosefile").value != "") {
 				alert("请先选中文件！");
 				return false;
-			}else{
-				document.getElementById("upload_msg").innerText = "已选中文件："+document.getElementById("choosefile").value;
+			} else {
+				document.getElementById("upload_msg").innerText = "已选中文件：" + document.getElementById("choosefile").value;
 				return true;
 			}
 		}
@@ -182,21 +180,6 @@
 				// 测试
 				var colorArr = gradient('#0082FF', '#FF4A66', 10);
 		*/
-		/**/
-		就得到了分割了10份的色值数组
-		var colorArr = ['#0082ff',
-			'#197cef',
-			'#3376e0',
-			'#4c71d1',
-			'#666bc1',
-			'#7f66b2',
-			'#9960a3',
-			'#b25a93',
-			'#cc5584',
-			'#e54f75'
-		]
-
-
 
 		function showcalcdiv1() {
 			console.log("click1");
@@ -217,7 +200,7 @@
 			var xhr = new XMLHttpRequest();
 			var URL_v = "calc?mode=single&p=" + pm
 			xhr.open("GET", URL_v, true);
-			// xhr.sestRequestHeader('Content-Type','application/json');
+			// xhr.setRequestHeader('Content-Type','application/json');
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					var response = JSON.parse(xhr.responseText);
@@ -454,7 +437,7 @@
 			/*var xhr = new XMLHttpRequest();
 			var URL_v = "eval"
 			xhr.open("POST", URL_v);
-			xhr.sestRequestHeader('Content-Type','application/x-www-form-urlencoded');
+			xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					var response = JSON.parse(xhr.responseText);
@@ -483,7 +466,7 @@
 			var xhr = new XMLHttpRequest();
 			var URL_v = "get_evaled_data?callf=" + fname;
 			xhr.open("GET", URL_v, true);
-			// xhr.sestRequestHeader('Content-Type','application/json');
+			// xhr.setRequestHeader('Content-Type','application/json');
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					var response = JSON.parse(xhr.responseText);
@@ -512,7 +495,7 @@
 			// var xhr = new XMLHttpRequest();
 			// var URL_v = "get_evaled_file?callf=" + fname;
 			// xhr.open("GET", URL_v, true);
-			// // xhr.sestRequestHeader('Content-Type','application/json');
+			// // xhr.setRequestHeader('Content-Type','application/json');
 			// xhr.onreadystatechange = function() {
 			// 	if (xhr.readyState === 4 && xhr.status === 200) {
 			// 		var response = JSON.parse(xhr.responseText);
@@ -535,6 +518,17 @@
 		function setRelationTable(table_data, div_id) {
 			var showfilebody = document.getElementById(div_id);
 			// var tdstr = '<tr><th>家系号</th><th>公禽号</th><th>母禽号</th><th>亲缘相关系数</th></tr>';
+			const colorArr = ['#0082ff',
+				'#197cef',
+				'#3376e0',
+				'#4c71d1',
+				'#666bc1',
+				'#7f66b2',
+				'#9960a3',
+				'#b25a93',
+				'#cc5584',
+				'#e54f75'
+			]
 			var tdstr = "";
 			for (var i = 0; i < table_data.length; i++) {
 				tdstr += '<tr>';
@@ -542,6 +536,9 @@
 				for (let j = 0; j < L - 1; j++) {
 					tdstr += '<td width=80px>' + table_data[i][j] + '</td>';
 				}
+				// console.log(table_data[i][L - 1]);
+				// console.log(parseInt(parseFloat(table_data[i][L - 1]) * 10));
+				// console.log(colorArr[parseInt(parseFloat(table_data[i][L - 1]) * 10)]);
 				tdstr += '<td width=80px style=\"background-color: ' + colorArr[parseInt(parseFloat(table_data[i][L - 1]) *
 					10)] + '\">' + table_data[i][L - 1] + '</td>';
 				tdstr += '</tr>';
@@ -553,9 +550,9 @@
 			var pm = document.getElementById("t_year").value;
 			console.log("年份:" + pm);
 			var xhr = new XMLHttpRequest();
-			var URL_v = "generate?t_year=" + pm
+			var URL_v = "generate?t_year=" + pm;
 			xhr.open("GET", URL_v, true);
-			// xhr.sestRequestHeader('Content-Type','application/json');
+			xhr.setRequestHeader('Content-Type', 'application/json');
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					var response = JSON.parse(xhr.responseText);
