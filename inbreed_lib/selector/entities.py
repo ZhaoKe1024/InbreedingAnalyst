@@ -4,14 +4,16 @@
 # @Author: ZhaoKe
 # @File : entities.py
 # @Software: PyCharm
-import random
+# import random
 from typing import List
 import numpy as np
+
+
 # from inbreed_lib.func import get_new_id, get_rand_gender
 
 
 class Vertex(object):
-    def __init__(self, index, name:str=None, depth=0, gender=0, family_id: str = ""):
+    def __init__(self, index, name: str = None, depth=0, gender=0, family_id: str = ""):
         self.index = index
         self.name = str(name) if name else str(index)
         self.depth = depth
@@ -146,18 +148,27 @@ class Stack(object):
         # return res
 
 
-def calculate_fitness(so: MateSolution, kinship: List[List]) -> float:
+def calculate_fitness(so: MateSolution, kinship: List[List], mode="v2") -> float:
     """
     objective function
+    :param mode: 模式, v2: 1.5R+minR
     :param so:
     :param kinship:
     :return: 方案里的平均亲缘相关系数
     """
     res = 0.0
+    min_R = 0.0
     L = len(so)
+    kinship = np.array(kinship)
     for i in range(L):
-        res += kinship[so.vector_male[i]][so.vector_female[i]]
-    return res / L
+        res += kinship[so.vector_male[i], so.vector_female[i]]
+        min_R += min(kinship[so.vector_male[i]])
+    if mode == "v1":
+        return res
+    elif mode == "v2":
+        return 1.5 * (res / L) + min_R
+    else:
+        raise Exception("Unknown fitness function mode.")
 
 
 # new objective function
@@ -171,31 +182,30 @@ def calculate_inbreed_coef(fa, ma):
     else:
         return -1
 
-
-if __name__ == '__main__':
-    so = MateSolution([], 0)
-    so.vector_male = [1, 1, 1, 1, 2, 2, 2, 2, 5, 6, 7, 4, 6, 7, 5, 6]
-    so.vector_female = [6, 4, 7, 6, 4, 3, 6, 8, 7, 9, 0, 7, 5, 6, 7, 8]
-    for i in range(len(so)):
-        print(so.vector_male[i], so.vector_female[i])
-    print("==============")
-    so.sort_vector()
-    for i in range(len(so)):
-        print(so.vector_male[i], so.vector_female[i])
-
-    best_solution = so
-    N = len(best_solution)
-    print()
-    pre_pos = best_solution.vector_male[0]
-    print(best_solution.vector_male[0], ": [", best_solution.vector_female[0], end=', ')
-    idx = 1
-    while idx < N:
-        if best_solution.vector_male[idx] != pre_pos:
-            print(']')
-            print(best_solution.vector_male[idx], ": [", end='')
-        print(best_solution.vector_female[idx], end=', ')
-        pre_pos = best_solution.vector_male[idx]
-        idx += 1
-    print("]")
-
-    print("std:", best_solution.get_std())
+# if __name__ == '__main__':
+#     so = MateSolution([], 0)
+#     so.vector_male = [1, 1, 1, 1, 2, 2, 2, 2, 5, 6, 7, 4, 6, 7, 5, 6]
+#     so.vector_female = [6, 4, 7, 6, 4, 3, 6, 8, 7, 9, 0, 7, 5, 6, 7, 8]
+#     for i in range(len(so)):
+#         print(so.vector_male[i], so.vector_female[i])
+#     print("==============")
+#     so.sort_vector()
+#     for i in range(len(so)):
+#         print(so.vector_male[i], so.vector_female[i])
+#
+#     best_solution = so
+#     N = len(best_solution)
+#     print()
+#     pre_pos = best_solution.vector_male[0]
+#     print(best_solution.vector_male[0], ": [", best_solution.vector_female[0], end=', ')
+#     idx = 1
+#     while idx < N:
+#         if best_solution.vector_male[idx] != pre_pos:
+#             print(']')
+#             print(best_solution.vector_male[idx], ": [", end='')
+#         print(best_solution.vector_female[idx], end=', ')
+#         pre_pos = best_solution.vector_male[idx]
+#         idx += 1
+#     print("]")
+#
+#     print("std:", best_solution.get_std())

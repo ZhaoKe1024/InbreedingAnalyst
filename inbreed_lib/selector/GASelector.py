@@ -8,7 +8,7 @@ from inbreed_lib.selector.entities import MateSolution, calculate_fitness
 
 
 class GASelector(object):
-    def __init__(self, popus, male_idxs, female_idxs, kinship_matrix, num_iter=2):
+    def __init__(self, popus, male_idxs, female_idxs, kinship_matrix, num_iter=2, mode="v2"):
         self.num_population = 30
         self.pm, self.pc = 0.1, 0.9
         self.num_iter = num_iter
@@ -21,7 +21,7 @@ class GASelector(object):
         self.rest = self.num_female % self.num_male
         print(f"num sum male female: {len(self.popus)}, {self.num_male}, {self.num_female}")
         print(f"num per rest:, {self.female_per_male}, {self.rest}")
-
+        self.fitmode = mode
         self.male_poultries = []
         self.female_poultries = []
         for ind in self.male_idxs:
@@ -161,7 +161,7 @@ class GASelector(object):
                 # calculate population inbreed coefficient by 有效 population 含量
                 # print(solution.vector_male)
                 # print(solution)
-                solution.fitness_value = calculate_fitness(solution, self.kinship_matrix)
+                solution.fitness_value = calculate_fitness(solution, self.kinship_matrix, mode=self.fitmode)
             # self.elite_reserve()
 
             self.solutions.sort(key=lambda x: x.fitness_value)
@@ -183,7 +183,7 @@ class GASelector(object):
         best_fitness = np.inf
         for solution in self.solutions:
             # calculate population inbreed coefficient by 有效 population 含量
-            fvalue = calculate_fitness(solution, self.kinship_matrix)
+            fvalue = calculate_fitness(solution, self.kinship_matrix, mode=self.fitmode)
             if fvalue < best_fitness:
                 best_fitness = fvalue
                 best_solution = solution

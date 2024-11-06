@@ -272,9 +272,9 @@ def calculate():
                                      "log": error_msg})
         else:
             return jsonify(response={"res": res, "selfv": calc.kinship.analyzer.self_list,
-                                 "commonv": calc.kinship.analyzer.common_list,
-                                 "vset": vset, "eset": eset, "posset": posset,
-                                 "log": calc.kinship.analyzer.get_just_message()})
+                                     "commonv": calc.kinship.analyzer.common_list,
+                                     "vset": vset, "eset": eset, "posset": posset,
+                                     "log": calc.kinship.analyzer.get_just_message()})
         # json_tosave = {}
         # for key in info_table:
         #     print(key, '\t', info_table[key])
@@ -311,23 +311,25 @@ def generate_new():
     if '.' in t_year:
         return jsonify({"flag": -1, "msg": "请给出整数数值"})
     t_year = int(t_year)
-    if t_year <= calc.max_year+1:
+    if t_year <= calc.max_year + 1:
 
         calc.generated_file = None
         result_file_name = f"result_name_rand_{t_year}.csv"
-        res_data = run_main(file_path=calc.file_to_analyze, gene_idx=str(t_year), result_file=calc.file_root + result_file_name)
+        res_data = run_main(file_path=calc.file_to_analyze, gene_idx=str(t_year),
+                            result_file=calc.file_root + result_file_name)
         calc.generated_file = calc.file_root + result_file_name
         return jsonify(
             {"flag": 0, "fname": result_file_name, "data": res_data, "msg": "生成结果文件：{}".format(result_file_name)})
     else:
-        assert calc.max_year+1 < t_year+1, "max_year:{} t_year:{}".format(calc.max_year+2, t_year+1)
+        assert calc.max_year + 1 < t_year + 1, "max_year:{} t_year:{}".format(calc.max_year + 2, t_year + 1)
         cur_file = calc.file_to_analyze
         name_template = save_dir + "result_name_rand_{}.xlsx"
         res_data = None
-        for f_year in range(calc.max_year+1, t_year+1):
+        for f_year in range(calc.max_year + 1, t_year + 1):
             # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
             print("open new csv file:", "./result_name_rand_{}.csv".format(f_year))
-            res_data = run_main(file_path=cur_file, gene_idx=str(f_year), result_file="./result_name_rand_{}.csv".format(f_year))
+            res_data = run_main(file_path=cur_file, gene_idx=str(f_year),
+                                result_file="./result_name_rand_{}.csv".format(f_year))
 
             book = load_workbook(cur_file)
             writer = pd.ExcelWriter(name_template.format(f_year), engine='openpyxl')
@@ -394,7 +396,7 @@ def eval_old():
         for j, iten in enumerate(result_files):
             res_msg += "(" + str(j + 1) + ") " + iten + "\n"
         return jsonify({"flag": 0, "msg": "生成结果文件：" + res_msg, "years": years, "file_list": result_files}), 200
-    return jsonify({"flag": -1,'error': '未知错误'}), 500
+    return jsonify({"flag": -1, 'error': '未知错误'}), 500
 
 
 if __name__ == '__main__':
