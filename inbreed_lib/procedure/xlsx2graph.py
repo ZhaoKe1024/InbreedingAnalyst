@@ -55,8 +55,7 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
 
 
 def read_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2021.xlsx", sheet_name: str = "16", id_start=0,
-                            depth=0) -> List[
-    Vertex]:
+                            depth=0) -> List[Vertex]:
     sex_table = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_name, cols=[7, 8, 9, 10, 11])
     print(sex_table.head(10))
     # -----------------------------------------------

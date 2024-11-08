@@ -29,16 +29,16 @@ def read_xlsx(filepath="./历代配种方案及出雏对照2021.xlsx"):
 def get_df_from_xlsx(filepath="../../temp_files/历代配种方案及出雏对照2021_带性别.xlsx", sheet_name=None,
                      cols: List = None) -> DataFrame:
     ext = filepath.split('.')[-1]
-    if ext[:-1] == "xls":
+    if ext[:-1] in ["xls", "xlsx"]:
         df_table = pd.read_excel(filepath, sheet_name=sheet_name, header=0, index_col=None,
                                  usecols=cols)  # about reading xlsx file
-        # print(df_table.columns.values)
+        print(df_table.columns.values)
     elif ext == "csv":
         df_table = pd.read_excel(filepath, header=0, index_col=None,
                                  usecols=cols)  # about reading xlsx file
     else:
         raise Exception("Unknown input format of file: {}.".format(filepath))
-    parent_df = df_table.dropna(axis=0).astype(int)
+    parent_df = df_table.dropna(axis=0)
     return parent_df
 
 
