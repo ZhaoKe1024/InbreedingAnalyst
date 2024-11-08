@@ -8,8 +8,8 @@ from inbreed_lib.selector.entities import MateSolution, calculate_fitness
 
 
 class GASelector(object):
-    def __init__(self, popus, male_idxs, female_idxs, kinship_matrix, num_iter=2, mode="v2"):
-        self.num_population = 30
+    def __init__(self, popus, male_idxs, female_idxs, kinship_matrix, num_popu=30, num_iter=2, mode="v2"):
+        self.num_population = num_popu
         self.pm, self.pc = 0.1, 0.9
         self.num_iter = num_iter
 

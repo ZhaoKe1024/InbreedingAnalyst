@@ -97,7 +97,7 @@ class MateSolution(object):
 
     def set_pair(self, ind, male_x, female_x) -> None:
         """use to single mutation"""
-        self.vector_male[ind] = male_x
+        # self.vector_male[ind] = male_x
         self.vector_female[ind] = female_x
 
     def set_female(self, ind: int, female_x) -> None:
@@ -105,7 +105,7 @@ class MateSolution(object):
 
     def set_pair_slice(self, ind_s, ind_e, male_array, female_array):
         """use to crossover"""
-        self.vector_male[ind_s:ind_e + 1] = male_array
+        # self.vector_male[ind_s:ind_e + 1] = male_array
         self.vector_female[ind_s:ind_e + 1] = female_array
 
     def sort_vector(self, by=1):
