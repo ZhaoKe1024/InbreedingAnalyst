@@ -4,19 +4,11 @@
 # @Author: ZhaoKe
 # @File : myself.py
 # @Software: PyCharm
-from flask import Flask, render_template
-from gevent import pywsgi
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
-app.jinja_env.variable_start_string = '<<'
-app.jinja_env.variable_end_string = '>>'
-
-
-@app.route('/')
-def index():
-    return render_template("./myself.html")
+from inbreed_lib.BreedingMainESR import run_main_with_graph
 
 
 if __name__ == '__main__':
-    http_server = pywsgi.WSGIServer(('0.0.0.0', 80), app)
-    http_server.serve_forever()
+    # run_main_without_graph(file_path="./analyzer/kinship330.csv", result_file="./analyzer/output_{}.csv")
+    # run_main_with_graph(file_path="./datasets/first330.xlsx", gene_idx="2025", result_file="./temp_files/output_{}.xlsx")
+    run_main_with_graph(file_path="./temp_files/output_2025.xlsx", gene_idx="2026", result_file="./temp_files/output_{}.xlsx")
