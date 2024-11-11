@@ -33,7 +33,7 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
         name = getattr(row, "公鸡号")
         family_id = getattr(row, "家系号")
         fname = getattr(row, "母鸡号")
-        if not name in male_name_set:
+        if name not in male_name_set:
             # name2id[name] = id_start
             male_name_set.add(name)
             male_vertex_list.append(Vertex(index=id_start + male_id,

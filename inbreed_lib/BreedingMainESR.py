@@ -172,6 +172,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     """
     idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
+    layergraph.print_children()
     # print(sheet_list)
     kinship = Kinship(graph=layergraph)
     sheet_list += [str(int(sheet_list[-1]) + 1)]
@@ -203,13 +204,25 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # kinship.print_parents()
     # kinship.print_all_poultry()
     # print(kinship.calc_kinship_corr(p1="14761", p2="14766"))
-    random.shuffle(popus)
-    male_rate = 1. / 11.
-    male_num = math.ceil(male_rate * len(popus))
-    female_num = len(popus) - male_num
-    for i in range(male_num):
-        vertex_list[i].gender = 1
-        popus[i].sex = 1
+    # random.shuffle(popus)
+    # male_rate = 1. / 11.
+    male_num = 0
+    female_num = 0
+    male_indices = []
+    female_indices = []
+    # print("given genders:")
+    for i in range(len(popus)):
+        # print(popus[i].gender)
+        if popus[i].gender == "公":
+            male_num += 1
+            male_indices.append(i)
+        elif popus[i].gender == "母":
+            female_num += 1
+            female_indices.append(i)
+        else:
+            raise Exception("Gender Error.")
+        # popus[i].sex = 1
+
     name2idx = dict()
     for i, p in enumerate(popus):
         name2idx[p.name] = i
@@ -218,7 +231,8 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     kinship_matrix = np.zeros((male_num, female_num))
     for i in range(male_num):
         for j in range(female_num):
-            kinship_matrix[i][j] = kinship.calc_kinship_corr(p1=popus[i].name, p2=popus[male_num + j].name)
+            kinship_matrix[i, j] = kinship.calc_kinship_corr(p1=popus[male_indices[i]].name,
+                                                             p2=popus[female_indices[j]].name)
     print(kinship_matrix)
     print("max min")
     print(np.max(kinship_matrix), np.min(kinship_matrix))
@@ -227,14 +241,15 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # ===============================Algorithm==================================
     # ====================Here is vanilla Genetic Algorithm=====================
 
-    GAS = GASelector(popus=popus, kinship_matrix=kinship_matrix, male_idxs=list(range(male_num)),
-                     female_idxs=list(range(male_num, len(popus))))
+    GAS = GASelector(popus=popus, kinship_matrix=kinship_matrix, male_idxs=male_indices,
+                     female_idxs=female_indices)
     best_solution = GAS.scheduler()
 
     # ===========================找出最佳雌性，来生育最佳雄性，等数留种=====================
     print("best solution:")
     print(best_solution.vector_male)
     print(best_solution.vector_female)
+    return
     female_list = []
     tmp_female_idx = 0
     i, j = 0, 0
@@ -245,8 +260,8 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
         tmp_male_idx = best_solution.vector_male[i]
         if cur_male_idx == tmp_male_idx:
             tmp_female_idx = best_solution.vector_female[i]
-            if kinship_matrix[tmp_male_idx][tmp_female_idx] < bst_female_value:
-                bst_female_value = kinship_matrix[tmp_male_idx][tmp_female_idx]
+            if kinship_matrix[tmp_male_idx, tmp_female_idx] < bst_female_value:
+                bst_female_value = kinship_matrix[tmp_male_idx, tmp_female_idx]
                 bst_female_idx = tmp_female_idx
         else:
             female_list.append(bst_female_idx)
