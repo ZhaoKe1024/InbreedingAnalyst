@@ -67,6 +67,7 @@ def get_graph_from_data(file_path):
     df = pd.read_excel(file_path, header=0, sheet_name=None, usecols=[1, 2, 3, 7, 11])
     print(df)
     sheet_list = list(df.keys())
+    print(sheet_list)
     # for item in sheet_list:
     #     if item
     vertex_list, vertex_layer, children_list, pre_name2idx = build_family_graph_base(

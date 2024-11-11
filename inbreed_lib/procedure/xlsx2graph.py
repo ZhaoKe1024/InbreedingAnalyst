@@ -24,6 +24,7 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
     # print("number of male poultry in " + sheet_name + ":" + str(male_id_len))
     # print("number of female poultry in " + sheet_name + ":" + str(female_id_len))
     male_name_set = set()
+    female_name_set = set()
     name2id = dict()
     male_vertex_list = []
     female_veretx_list = []
@@ -31,6 +32,7 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
     for row in sex_table.itertuples():
         name = getattr(row, "公鸡号")
         family_id = getattr(row, "家系号")
+        fname = getattr(row, "母鸡号")
         if not name in male_name_set:
             # name2id[name] = id_start
             male_name_set.add(name)
@@ -40,17 +42,22 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
                                            gender=1,
                                            family_id=family_id))
             male_id += 1
-        female_veretx_list.append(Vertex(index=id_start + male_id_len + female_id,
-                                         name=getattr(row, "母鸡号"),
-                                         depth=depth,
-                                         gender=0,
-                                         family_id=family_id))
-        name2id[name] = id_start
-        name2id[getattr(row, "母鸡号")] = male_id_len + id_start
-        female_id += 1
+            name2id[name] = id_start
+        if fname not in female_name_set:
+            female_name_set.add(fname)
+            female_veretx_list.append(Vertex(index=id_start + male_id_len + female_id,
+                                             name=fname,
+                                             depth=depth,
+                                             gender=0,
+                                             family_id=family_id))
+            female_id += 1
+            name2id[fname] = male_id_len + id_start
 
     # print("number of female poultry in " + sheet_name + ":" + str(len(female_veretx_list)))
     cur_vertex_list = male_vertex_list + female_veretx_list
+    print("len of cur vertex list:")
+    print(len(male_vertex_list), len(female_veretx_list))
+    print(len(cur_vertex_list))
     return cur_vertex_list
 
 
@@ -130,20 +137,25 @@ def read_vertices_edges_from_xlsx(file_path, sheet_name, pre_sheet_name,
         cur_name2idx[ver.name] = ver.index
         # if sheet_name in ["17", "18"]:
         #     print(f"name:{ver.name}_index:{ver.index}")
+    # print("cur_name2idx:")
     # print(cur_name2idx)
+    print("pre number", len(pre_name2ind))
     pre_children = [[] for _ in range(len(pre_name2ind))]
     edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=pre_sheet_name, cols=[7, 8, 9])
-    # print(edges_df.columns)
+    print(edges_df.columns)
     for idx, row in enumerate(edges_df.itertuples()):
         # if sheet_name == "19":
-        # print("row:", row)
+        # print("row:", row, row[1], row[2], row[3])
         wi = str(getattr(row, "翅号")) if "翅号" in edges_df.columns else str(getattr(row, "_1"))
         # if sheet_name in ["17", "18"]:
-        #     print("row:", row)
-        #     print("wi:", wi)
+        # print("row:", row)
+        # print("wi:", wi)
         if wi in cur_name2idx:
-            fa_i = str(getattr(row, "_2"))
-            ma_i = str(getattr(row, "_3"))
+            fa_i = str(getattr(row, "_3"))
+            ma_i = str(getattr(row, "_2"))
+            # print("fa mi:", fa_i, ma_i, cur_name2idx[wi])
+            # print(pre_name2ind[fa_i])
+            # print(pre_name2ind[ma_i])
             pre_children[pre_name2ind[fa_i]].append(cur_name2idx[wi])
             pre_children[pre_name2ind[ma_i]].append(cur_name2idx[wi])
     # for i, child_list in enumerate(pre_children):
@@ -168,6 +180,8 @@ def build_family_graph_base(file_path="./历代配种方案及出雏对照2021_�
     for i, ver in enumerate(each_vertex_list):
         vertex_layer[0].append(ver.index)
         pre_name2idx[ver.name] = i
+    # print("pre_name2idx:")
+    # print(pre_name2idx)
     skip_id = len(each_vertex_list)
     idx += skip_id
     vertex_list.extend(each_vertex_list)

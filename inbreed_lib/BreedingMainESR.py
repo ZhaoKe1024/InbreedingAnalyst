@@ -187,7 +187,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     if gene_idx == sheet_list[-1]:
         # print(vertex_layer)
         for idx, item in enumerate(vertex_layer[year2idx[gene_idx]]):
-            print(vertex_list[item].name)
+            # print(vertex_list[item].name)
             popus.append(vertex_list[item])
     else:
         # print(vertex_layer)
@@ -279,7 +279,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     All_Data_List.append([None, tmp_fid, popus[pre_pos].name, popus[male_num + cur_female].name,
                           f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[pre_pos].name,
                           popus[male_num + cur_female].name, tmp_fid, sex_id])
-    best_idx += 1
+    # best_idx += 1
 
     pre_pos = best_solution.vector_male[0]
     cur_female = best_solution.vector_female[0]
@@ -306,9 +306,9 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
             sex_id = "1"
             child_id = idgenarator.get_new_id()
 
-            All_Data_List.append([None, tmp_fid, popus[pre_pos].name, popus[male_num + cur_female].name,
-                                  f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id,
-                                  popus[pre_pos].name,
+            All_Data_List.append([None, tmp_fid, popus[cur_male].name, popus[male_num + cur_female].name,
+                                  f"{kinship_matrix[cur_male, cur_female]:.5f}", None, None, child_id,
+                                  popus[cur_male].name,
                                   popus[male_num + cur_female].name, tmp_fid, sex_id])
             best_idx += 1
 
@@ -316,8 +316,8 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
         tmp_fid = idgenarator.get_family_id(y="", m=mi)
         sex_id = "0"
         child_id = idgenarator.get_new_id()
-        All_Data_List.append([None, tmp_fid, popus[pre_pos].name, popus[male_num + cur_female].name,
-                              f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[pre_pos].name,
+        All_Data_List.append([None, tmp_fid, popus[cur_male].name, popus[male_num + cur_female].name,
+                              f"{kinship_matrix[cur_male, cur_female]:.5f}", None, None, child_id, popus[cur_male].name,
                               popus[male_num + cur_female].name, tmp_fid, sex_id])
         pre_pos = cur_male
         idx += 1
