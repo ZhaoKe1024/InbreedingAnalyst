@@ -141,7 +141,7 @@ def read_vertices_edges_from_xlsx(file_path, sheet_name, pre_sheet_name,
     # print(cur_name2idx)
     print("pre number", len(pre_name2ind))
     pre_children = [[] for _ in range(len(pre_name2ind))]
-    edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=pre_sheet_name, cols=[7, 8, 9])
+    edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=pre_sheet_name, cols=[7, 8, 9, 11])
     print(edges_df.columns)
     for idx, row in enumerate(edges_df.itertuples()):
         # if sheet_name == "19":
