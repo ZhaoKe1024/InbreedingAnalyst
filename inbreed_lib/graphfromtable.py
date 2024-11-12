@@ -76,12 +76,14 @@ def get_graph_from_data(file_path):
     N = len(vertex_list)
     # print("pre_name2idx:")
     # print(pre_name2idx)
+    # print("-------children-0---------")
     # for idx, cd in enumerate(children_list):
-    #     print(cd)
+    #     print(idx, ": ", cd)
     # ------------Poultry read and build-------------------------
     edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_list[-1],
                                 cols=[7, 8, 9, 10, 11])
-    # print(edges_df.columns)
+    print(edges_df.columns)
+    print(edges_df)
     # new_children = []
     new_vertices = []
     for idx, row in enumerate(edges_df.itertuples()):
@@ -102,17 +104,16 @@ def get_graph_from_data(file_path):
         children_list[pre_name2idx[ma_i]].append(N + idx)
 
     vertex_layer.append([ver.index for ver in new_vertices])
-    # print("=============children_list================")
-    # for idx, cd in enumerate(children_list):
-    #     print(idx, ":", cd)
-    #
-    # print("len:", len(vertex_list))
-    # print([j.name for j in vertex_list])
-    #
-    # idx2year = {0: "2014", 1: "2015", 2: "2016"}
-    # for idx, item in enumerate(vertex_layer):
-    #     print(idx2year[idx])
-    #     print([vertex_list[j].name for j in item])
+
+    print("len:", len(vertex_list))
+    print([j.name for j in vertex_list])
+    idx2year = {0: "2014", 1: "2015", 2: "2016", 3: "2017", 4: "2018", 5: "2019", 6: 2020}
+    for idx, item in enumerate(vertex_layer):
+        print(idx2year[idx])
+        print([vertex_list[j].name for j in item])
+
+    for idx, cd in enumerate(children_list):
+        print(idx, ": ", cd)
     layergraph = LayerNetworkGraph(vertex_list=vertex_list, vertex_layer=vertex_layer, children=children_list)
     return layergraph, vertex_layer, vertex_list, sheet_list
 

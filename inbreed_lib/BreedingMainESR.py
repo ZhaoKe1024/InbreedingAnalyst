@@ -172,7 +172,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     """
     idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
-    # layergraph.print_children()
+    layergraph.print_children()
     # print(sheet_list)
     kinship = Kinship(graph=layergraph)
     sheet_list += [str(int(sheet_list[-1]) + 1)]
@@ -212,10 +212,10 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # print("given genders:")
     for i in range(len(popus)):
         # print(popus[i].gender)
-        if popus[i].gender in ["公", 1]:
+        if popus[i].gender in ["公", "1"]:
             male_num += 1
             male_indices.append(i)
-        elif popus[i].gender in ["母", 0]:
+        elif popus[i].gender in ["母", "0"]:
             female_num += 1
             female_indices.append(i)
         else:
