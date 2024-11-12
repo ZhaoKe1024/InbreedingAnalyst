@@ -5,8 +5,6 @@
 # @File : simplega.py
 # @Software: PyCharm
 # Equal Seed Reservation
-import math
-import random
 import numpy as np
 import pandas as pd
 from openpyxl import load_workbook
@@ -170,7 +168,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     :param result_file:
     :return:
     """
-    idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) + 1))
+    idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) - 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
     layergraph.print_children()
     # print(sheet_list)
@@ -223,6 +221,10 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
         # popus[i].sex = 1
     print("number:", male_num, female_num)
     print("len:", male_indices, female_indices)
+    print([popus[j].name for j in male_indices])
+    print([popus[j].name for j in female_indices])
+
+    # return
     name2idx = dict()
     for i, p in enumerate(popus):
         name2idx[p.name] = i
@@ -242,7 +244,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # ====================Here is vanilla Genetic Algorithm=====================
 
     GAS = GASelector(popus=popus, kinship_matrix=kinship_matrix, male_idxs=male_indices,
-                     female_idxs=female_indices)
+                     female_idxs=female_indices, num_popu=300, num_iter=50)
     best_solution = GAS.scheduler()
 
     # ===========================找出最佳雌性，来生育最佳雄性，等数留种=====================
@@ -254,7 +256,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # return
 
     female_list = []
-    tmp_female_idx = 0
+    # tmp_female_idx = 0
     i, j = 0, 0
     bst_female_value = 999.
     bst_female_idx = None
@@ -276,67 +278,68 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     print(female_list)
     # =============================================================================
 
-    pre_pos = best_solution.vector_male[0]
-    cur_female = best_solution.vector_female[0]
+    # pre_pos = best_solution.vector_male[0]
+    # cur_female = best_solution.vector_female[0]
     # print("========----------育种方案----------==========")
     # print("(家系号，雄性个体编号, 雌性个体编号)]")
-    idx = 1
+    # idx = 1
     # fout = open(result_file, 'w', encoding="utf_8")
     # fout.write(
     #     "配种方案,家系号,公鸡号,母鸡号,亲缘相关系数,出雏,批次,翅号,公鸡号,母鸡号,{}年家系号,性别\n".format(gene_idx))
     All_Data_List = []
     # print("配种方案", "家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号", "{}年家系号".format(gene_idx))
 
-    year, mi, fi = "24", 0, 0
+    mi, fi = 0, 0
     best_idx = 0
-    pre_pos = best_solution.vector_male[female_list[best_idx]]
-    cur_female = best_solution.vector_female[female_list[best_idx]]
+    pre_pos = best_solution.vector_male[0]
+    cur_female = female_list[best_idx]
+    male_pos = male_indices[pre_pos]
+    female_pos = female_indices[cur_female]
     tmp_fid = idgenarator.get_family_id(y="", m=mi)
-    sex_id = "1"
     child_id = idgenarator.get_new_id()
-    All_Data_List.append([None, tmp_fid, popus[pre_pos].name, popus[male_num + cur_female].name,
-                          f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[pre_pos].name,
-                          popus[male_num + cur_female].name, tmp_fid, sex_id])
-    # best_idx += 1
+    All_Data_List.append([None, tmp_fid, popus[male_pos].name, popus[female_pos].name,
+                          f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[male_pos].name,
+                          popus[female_pos].name, tmp_fid, "公"])
+    best_idx += 1
 
     pre_pos = best_solution.vector_male[0]
     cur_female = best_solution.vector_female[0]
+    male_pos = male_indices[pre_pos]
+    female_pos = female_indices[cur_female]
     tmp_fid = idgenarator.get_family_id(y="", m=mi)
-    sex_id = "0"
     child_id = idgenarator.get_new_id()
-    All_Data_List.append([None, tmp_fid, popus[pre_pos].name, popus[male_num + cur_female].name,
-                          f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[pre_pos].name,
-                          popus[male_num + cur_female].name, tmp_fid, sex_id])
+    All_Data_List.append([None, tmp_fid, popus[male_pos].name, popus[female_pos].name,
+                          f"{kinship_matrix[pre_pos, cur_female]:.5f}", None, None, child_id, popus[male_pos].name,
+                          popus[female_pos].name, tmp_fid, "母"])
     fi += 1
     idx = 1
 
     while idx < len(best_solution):
         cur_male = best_solution.vector_male[idx]
-        # cur_male_name = popus[cur_male].name
         cur_female = best_solution.vector_female[idx]
-        # cur_female_name = popus[male_num + cur_female].name
+        male_pos = male_indices[cur_male]
+        female_pos = female_indices[cur_female]
         if cur_male != pre_pos:
-            bst_pos = best_solution.vector_male[female_list[best_idx]]
-            # cur_male_name = popus[cur_male].name
-            bst_female = best_solution.vector_female[female_list[best_idx]]
+            bst_male = best_solution.vector_male[idx]
+            bst_female = female_list[best_idx]
+            bst_male_pos = male_indices[bst_male]
+            bst_female_pos = female_indices[bst_female]
             mi += 1
             tmp_fid = idgenarator.get_family_id(y="", m=mi)
-            sex_id = "1"
             child_id = idgenarator.get_new_id()
 
-            All_Data_List.append([None, tmp_fid, popus[cur_male].name, popus[male_num + cur_female].name,
-                                  f"{kinship_matrix[cur_male, cur_female]:.5f}", None, None, child_id,
-                                  popus[cur_male].name,
-                                  popus[male_num + cur_female].name, tmp_fid, sex_id])
+            All_Data_List.append([None, tmp_fid, popus[bst_male_pos].name, popus[bst_female_pos].name,
+                                  f"{kinship_matrix[bst_male, bst_female]:.5f}", None, None, child_id,
+                                  popus[bst_male_pos].name,
+                                  popus[bst_female_pos].name, tmp_fid, "公"])
             best_idx += 1
 
         # ibc = kinship_matrix[cur_male, cur_female]
         tmp_fid = idgenarator.get_family_id(y="", m=mi)
-        sex_id = "0"
         child_id = idgenarator.get_new_id()
-        All_Data_List.append([None, tmp_fid, popus[cur_male].name, popus[male_num + cur_female].name,
-                              f"{kinship_matrix[cur_male, cur_female]:.5f}", None, None, child_id, popus[cur_male].name,
-                              popus[male_num + cur_female].name, tmp_fid, sex_id])
+        All_Data_List.append([None, tmp_fid, popus[male_pos].name, popus[female_pos].name,
+                              f"{kinship_matrix[cur_male, cur_female]:.5f}", None, None, child_id, popus[male_pos].name,
+                              popus[female_pos].name, tmp_fid, "母"])
         pre_pos = cur_male
         idx += 1
         fi += 1
@@ -354,35 +357,35 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     print(f"generate finished gene {gene_idx}")
 
 
-def run_main_without_graph_niter(file_path="./kinship330.csv", gene_idx=2018, result_file=None):
-    max_year = 2020
-    t_year = 2025
-    assert max_year + 1 < t_year + 1, "max_year:{} t_year:{}".format(max_year + 2, t_year + 1)
-    # df = pd.read_csv(file_path, delimiter=',', header=0, index_col=None)
-    # popus_idxs = list(df.iloc[:, 0]) + list(df.columns[1:])
-    # popus = []
-    # for idx, name in enumerate(popus_idxs):
-    #     popus.append(Vertex(idx, name=name))
-    # kinship_matrix = np.array(df.iloc[:, 1:])
-
-    res_data = None
-    for f_year in range(max_year + 1, t_year + 1):
-        # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
-        print("open new csv file:", "./result_name_rand_{}.csv".format(f_year))
-        res_data = run_main_without_graph(file_path=file_path, gene_idx=f_year,
-                                          result_file=result_file.format(f_year))
-
-        book = load_workbook(cur_file)
-        writer = pd.ExcelWriter(name_template.format(f_year), engine='openpyxl')
-        writer.book = book
-        df1 = pd.DataFrame(np.array(res_data))
-        df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
-                       "{}年家系号".format(str(f_year)[-2:]), "性别"]
-        df1.to_excel(writer, str(f_year))  # first是第一张工作表名称
-        writer.save()
-        writer.close()
-        cur_file = name_template.format(f_year)
-    calc.generated_file = calc.file_root + cur_file
+# def run_main_without_graph_niter(file_path="./kinship330.csv", gene_idx=2018, result_file=None):
+#     max_year = 2020
+#     t_year = 2025
+#     assert max_year + 1 < t_year + 1, "max_year:{} t_year:{}".format(max_year + 2, t_year + 1)
+#     # df = pd.read_csv(file_path, delimiter=',', header=0, index_col=None)
+#     # popus_idxs = list(df.iloc[:, 0]) + list(df.columns[1:])
+#     # popus = []
+#     # for idx, name in enumerate(popus_idxs):
+#     #     popus.append(Vertex(idx, name=name))
+#     # kinship_matrix = np.array(df.iloc[:, 1:])
+#
+#     res_data = None
+#     for f_year in range(max_year + 1, t_year + 1):
+#         # run_main(calc.file_to_analyze, gene_idx=str("f_year"))
+#         print("open new csv file:", "./result_name_rand_{}.csv".format(f_year))
+#         res_data = run_main_without_graph(file_path=file_path, gene_idx=f_year,
+#                                           result_file=result_file.format(f_year))
+#
+#         book = load_workbook(cur_file)
+#         writer = pd.ExcelWriter(name_template.format(f_year), engine='openpyxl')
+#         writer.book = book
+#         df1 = pd.DataFrame(np.array(res_data))
+#         df1.columns = ["家系号", "公鸡号", "母鸡号", "亲缘相关系数", "出雏", "批次", "翅号", "公鸡号", "母鸡号",
+#                        "{}年家系号".format(str(f_year)[-2:]), "性别"]
+#         df1.to_excel(writer, str(f_year))  # first是第一张工作表名称
+#         writer.save()
+#         writer.close()
+#         cur_file = name_template.format(f_year)
+#     calc.generated_file = calc.file_root + cur_file
 
 
 if __name__ == '__main__':

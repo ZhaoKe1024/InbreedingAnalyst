@@ -189,10 +189,10 @@ class GASelector(object):
                 best_solution = solution
         print("best fv 群体雌雄间平均亲缘相关系数:", best_fitness)
         best_solution.sort_vector()
+
         # N = len(best_solution)
         # print(best_solution.vector_male)
         # print(best_solution.vector_female)
-
         # self.print_result(best_solution)
 
         # pre_pos = best_solution.vector_male[0]
@@ -208,4 +208,5 @@ class GASelector(object):
         #     pre_pos = best_solution.vector_male[idx]
         #     idx += 1
         # print("]")
+
         return best_solution

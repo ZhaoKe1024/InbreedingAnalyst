@@ -18,9 +18,9 @@ class IDGenerator(object):
 
     def get_family_id(self, y: str, m: int):
         if y == "":
-            res = str(self.year)
+            res = str(self.year) + "-"
         else:
-            res = y
+            res = y + "-"
         if m < 10:
             res += "0" + str(m)
         else:
