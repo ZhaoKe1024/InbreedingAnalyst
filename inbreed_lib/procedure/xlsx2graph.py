@@ -14,7 +14,7 @@ from inbreed_lib.procedure.xlsxreader import get_df_from_xlsx
 def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2021.xlsx", sheet_name: str = "16", id_start=0,
                                  depth=0) -> List[Vertex]:
     sex_table = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_name, cols=[1, 2, 3])
-    print(sex_table.head())
+    # print(sex_table.head())
     # -----------------------------------------------
     # -------------Build Vertex List-----------------
     # -----------------------------------------------
@@ -137,8 +137,10 @@ def read_vertices_edges_from_xlsx(file_path, sheet_name, pre_sheet_name,
         cur_name2idx[ver.name] = ver.index
         # if sheet_name in ["17", "18"]:
         #     print(f"name:{ver.name}_index:{ver.index}")
-    # print("cur_name2idx:")
-    # print(cur_name2idx)
+    print("pre_name2idx")
+    print(pre_name2ind)
+    print("cur_name2idx:")
+    print(cur_name2idx)
     print("pre number", len(pre_name2ind))
     pre_children = [[] for _ in range(len(pre_name2ind))]
     edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=pre_sheet_name, cols=[7, 8, 9, 11])
@@ -180,6 +182,7 @@ def build_family_graph_base(file_path="./历代配种方案及出雏对照2021_�
     for i, ver in enumerate(each_vertex_list):
         vertex_layer[0].append(ver.index)
         pre_name2idx[ver.name] = i
+    map_len = len(pre_name2idx)
     # print("pre_name2idx:")
     # print(pre_name2idx)
     skip_id = len(each_vertex_list)
@@ -196,10 +199,11 @@ def build_family_graph_base(file_path="./历代配种方案及出雏对照2021_�
                                                                        pre_sheet_name=sheet_list[depth - 1],
                                                                        id_start=idx, depth=depth,
                                                                        pre_name2ind=pre_name2idx)
-        pre_name2idx = dict()
+        # pre_name2idx = dict()
         for i, ver in enumerate(each_vertex_list):
             vertex_layer[depth].append(ver.index)
-            pre_name2idx[ver.name] = i
+            pre_name2idx[ver.name] = map_len + i
+        map_len = len(pre_name2idx)
         vertex_list.extend(each_vertex_list)
         skip_id = len(each_vertex_list)
         idx += skip_id

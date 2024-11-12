@@ -193,7 +193,8 @@ class FamilyAnalyzer(object):
         for edge in familyGraph.edge_list:
             # inv graph need reverse the index of vertex
             self.__add_edge(self.num_ver - 1 - edge[1], self.num_ver - 1 - edge[0])
-
+        # print("Parent>>>>>>>>>>>>")
+        # print("len:", len(self.parents), self.parents)
         # 用于返回结果的一些结构
         self.Result_ancestors_inbreed = ""
         self.Result_ancestors_corrcoef = ""
@@ -242,6 +243,8 @@ class FamilyAnalyzer(object):
         que = deque()
         Li = [(inv_idx, [inv_idx])]
         marked[inv_idx] = True
+        # print("parents:")
+        # print(inv_idx, self.parents[inv_idx])
         for p in self.parents[inv_idx][::rev]:
             marked[p] = True
             que.append((p, [inv_idx, p]))
@@ -356,10 +359,10 @@ class FamilyAnalyzer(object):
         # print("============================================")
         # # 所有前驱结点及其路径
         # for i in range(len(L1)):
-        #     print(self.__invIdx(L1[i][0]), [self.__invIdx(val) for val in L1[i][1]])
+        #     print(self.__name(self.__invIdx(L1[i][0])), [self.__name(self.__invIdx(val)) for val in L1[i][1]])
         #     # L1[i] = tmp_tuple
         # for i in range(len(L2)):
-        #     print(self.__invIdx(L2[i][0]), [self.__invIdx(val) for val in L2[i][1]])
+        #     print(self.__name(self.__invIdx(L2[i][0])), [self.__name(self.__invIdx(val)) for val in L2[i][1]])
         #     # L2[i] = tmp_tuple
 
         L_common = self.__intersection_path(L1, L2)
@@ -471,8 +474,8 @@ class FamilyAnalyzer(object):
         common_ancestors = self.find_all_common_ancestors(ind1, ind2)
         if final in [0, 1]:
             self.Result_ancestors = f"个体 {self.__name(ind1)} 和 {self.__name(ind2)} 的共同祖先个数:{len(common_ancestors)}, 编号分别是:["
-        # print(f"common ancestors of {self.__name(ind1)} and {self.__name(ind2)}:")
-        # print('\t', [self.__name(val) for val in common_ancestors])
+            # print(f"common ancestors of {self.__name(ind1)} and {self.__name(ind2)}:")
+            # print('\t', [self.__name(val) for val in common_ancestors])
         if final in [0, 1]:
             # for val in common_ancestors:
             #     self.Result_ancestors += self.__name(val) + ', '

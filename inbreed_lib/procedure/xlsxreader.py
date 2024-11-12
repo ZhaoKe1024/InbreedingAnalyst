@@ -32,7 +32,7 @@ def get_df_from_xlsx(filepath="../../temp_files/历代配种方案及出雏对�
     if ext[:-1] in ["xls", "xlsx"]:
         df_table = pd.read_excel(filepath, sheet_name=sheet_name, header=0, index_col=None,
                                  usecols=cols)  # about reading xlsx file
-        print(df_table.columns.values)
+        # print(df_table.columns.values)
     elif ext == "csv":
         df_table = pd.read_excel(filepath, header=0, index_col=None,
                                  usecols=cols)  # about reading xlsx file

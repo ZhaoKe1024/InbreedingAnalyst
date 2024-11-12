@@ -172,7 +172,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     """
     idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) + 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
-    layergraph.print_children()
+    # layergraph.print_children()
     # print(sheet_list)
     kinship = Kinship(graph=layergraph)
     sheet_list += [str(int(sheet_list[-1]) + 1)]
@@ -180,10 +180,10 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     year2idx = {}  # {"16": 0, "17": 1, "18": 2, "19": 3, "20": 4, "21": 5}
     for jdx, item in enumerate(sheet_list):
         year2idx[item] = jdx
-    print("Sheet list:", year2idx)
-    print("Load edges from", gene_idx)
     popus = []
-    print("year idx", year2idx[gene_idx])
+    # print("Sheet list:", year2idx)
+    # print("Load edges from", gene_idx)
+    # print("year idx", year2idx[gene_idx])
     # return
     if gene_idx == sheet_list[-1]:
         # print(vertex_layer)
@@ -197,7 +197,6 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
             popus.append(vertex_list[item])
             # popus.append(Poultry(fi=f_i, wi=wi, fa_i=fa_i, ma_i=ma_i, sex=0, inbreedc=0.))
     # return
-
     # print(kinship.calc_inbreed_coef(p="14774"))
     # kinship.print_edges()
     # kinship.print_layer()
@@ -213,16 +212,17 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # print("given genders:")
     for i in range(len(popus)):
         # print(popus[i].gender)
-        if popus[i].gender == "公":
+        if popus[i].gender in ["公", 1]:
             male_num += 1
             male_indices.append(i)
-        elif popus[i].gender == "母":
+        elif popus[i].gender in ["母", 0]:
             female_num += 1
             female_indices.append(i)
         else:
             raise Exception("Gender Error.")
         # popus[i].sex = 1
-
+    print("number:", male_num, female_num)
+    print("len:", male_indices, female_indices)
     name2idx = dict()
     for i, p in enumerate(popus):
         name2idx[p.name] = i
@@ -249,7 +249,10 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     print("best solution:")
     print(best_solution.vector_male)
     print(best_solution.vector_female)
-    return
+
+    # =====-------------===============
+    # return
+
     female_list = []
     tmp_female_idx = 0
     i, j = 0, 0

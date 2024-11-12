@@ -65,17 +65,19 @@ def get_graph_from_data(file_path):
     # np.random.seed(42)  # 2024-04-02
     # kinship_matrix = 1 / 16 + 1 / 16 * np.random.randn(len(male_idxs), len(female_idxs))
     df = pd.read_excel(file_path, header=0, sheet_name=None, usecols=[1, 2, 3, 7, 11])
-    print(df)
+    # print(df)
     sheet_list = list(df.keys())
-    print(sheet_list)
+    # print(sheet_list)
     # for item in sheet_list:
     #     if item
     vertex_list, vertex_layer, children_list, pre_name2idx = build_family_graph_base(
         file_path=file_path,
         sheet_list=sheet_list)
     N = len(vertex_list)
-    print("pre_name2idx:")
-    print(pre_name2idx)
+    # print("pre_name2idx:")
+    # print(pre_name2idx)
+    # for idx, cd in enumerate(children_list):
+    #     print(cd)
     # ------------Poultry read and build-------------------------
     edges_df = get_df_from_xlsx(filepath=file_path, sheet_name=sheet_list[-1],
                                 cols=[7, 8, 9, 10, 11])
@@ -91,20 +93,26 @@ def get_graph_from_data(file_path):
         f_i = str(getattr(row, "_4"))
         gd = str(getattr(row, "性别"))
         vertex_list.append(Vertex(index=N + idx, name=wi, depth=0, family_id=f_i, gender=gd))
+        children_list.append([])
         new_vertices.append(Vertex(index=N + idx, name=wi, depth=0, family_id=f_i, gender=gd))
         # print(wi, fa_i, ma_i)
         # print(pre_name2idx[fa_i], pre_name2idx[ma_i])
         # print(children_list[pre_name2idx[fa_i]])
         children_list[pre_name2idx[fa_i]].append(N + idx)
         children_list[pre_name2idx[ma_i]].append(N + idx)
-    vertex_list.extend(new_vertices)
+
     vertex_layer.append([ver.index for ver in new_vertices])
-    for cd in children_list:
-        print(cd)
-    idx2year = {0: "2014", 1: "2015", 2: "2016"}
-    for idx, item in enumerate(vertex_layer):
-        print(idx2year[idx])
-        print([vertex_list[j].name for j in item])
+    # print("=============children_list================")
+    # for idx, cd in enumerate(children_list):
+    #     print(idx, ":", cd)
+    #
+    # print("len:", len(vertex_list))
+    # print([j.name for j in vertex_list])
+    #
+    # idx2year = {0: "2014", 1: "2015", 2: "2016"}
+    # for idx, item in enumerate(vertex_layer):
+    #     print(idx2year[idx])
+    #     print([vertex_list[j].name for j in item])
     layergraph = LayerNetworkGraph(vertex_list=vertex_list, vertex_layer=vertex_layer, children=children_list)
     return layergraph, vertex_layer, vertex_list, sheet_list
 
