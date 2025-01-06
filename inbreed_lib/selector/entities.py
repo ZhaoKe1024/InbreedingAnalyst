@@ -166,7 +166,7 @@ def calculate_fitness(so: MateSolution, kinship: List[List], mode="v2") -> float
     if mode == "v1":
         return res
     elif mode == "v2":
-        return 1.5 * (res / L) + min_R
+        return 1.5 * (res / L) + min_R / len(kinship)
     else:
         raise Exception("Unknown fitness function mode.")
 
