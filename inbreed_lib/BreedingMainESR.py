@@ -160,7 +160,7 @@ def run_main_without_graph(file_path="./kinship330.csv", gene_idx=2018, result_f
     return res_data
 
 
-def run_main_with_graph(file_path, gene_idx=None, result_file=None):
+def run_main_with_graph(file_path, result_file=None, configs=None):
     """
     等量留种方式
     :param file_path:
@@ -168,6 +168,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     :param result_file:
     :return:
     """
+    gene_idx = configs["gene_idx"]
     idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) - 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
     # if len(sheet_list[0]) == 2:
@@ -255,7 +256,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
 
     GAS = GASelector(popus=popus, kinship_matrix=kinship_matrix, male_idxs=male_indices,
                      female_idxs=female_indices, num_popu=300, num_iter=50)
-    best_solution = GAS.scheduler()
+    best_solution = GAS.scheduler(mode=configs["mode"])
 
     # ===========================找出最佳雌性，来生育最佳雄性，等数留种=====================
     print("best solution:")
