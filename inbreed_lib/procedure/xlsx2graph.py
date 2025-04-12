@@ -197,6 +197,8 @@ def build_family_graph_base(file_path="./历代配种方案及出雏对照2021_�
         if depth == 0:
             continue
         print("build start point and edge for sheet:", sheet_name)
+        if sheet_name[:5] == "Sheet":
+            continue
         each_vertex_list, children_list = read_vertices_edges_from_xlsx(file_path=file_path,
                                                                         sheet_name=sheet_list[depth],
                                                                         pre_sheet_name=sheet_list[depth - 1],

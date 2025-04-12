@@ -170,6 +170,10 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     """
     idgenarator = IDGenerator(end_number=int(gene_idx) * 1000, year=str(int(gene_idx) - 1))
     layergraph, vertex_layer, vertex_list, sheet_list = get_graph_from_data(file_path=file_path)
+    # if len(sheet_list[0]) == 2:
+    #     for i in range(len(sheet_list)):
+    #         sheet_list[i] = "20"+sheet_list[i]
+    print(sheet_list)
     layergraph.print_children()
     # print(sheet_list)
     kinship = Kinship(graph=layergraph)
