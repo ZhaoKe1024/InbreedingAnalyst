@@ -206,7 +206,7 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
     # kinship.print_all_poultry()
     # print(kinship.calc_kinship_corr(p1="14761", p2="14766"))
     # random.shuffle(popus)
-    # male_rate = 1. / 11.
+    male_rate = 1. / 11.
     male_num = 0
     female_num = 0
     male_indices = []
@@ -221,7 +221,13 @@ def run_main_with_graph(file_path, gene_idx=None, result_file=None):
             female_num += 1
             female_indices.append(i)
         else:
-            raise Exception("Gender Error.")
+            # raise Exception("Gender Error.")
+            if np.random.rand() < male_rate:
+                male_num += 1
+                male_indices.append(i)
+            else:
+                female_num += 1
+                female_indices.append(i)
         # popus[i].sex = 1
     print("number:", male_num, female_num)
     print("len:", male_indices, female_indices)
