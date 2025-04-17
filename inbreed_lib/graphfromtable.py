@@ -94,7 +94,10 @@ def get_graph_from_data(file_path):
         wi = str(getattr(row, "翅号")) if "翅号" in edges_df.columns else str(getattr(row, "_1"))
         fa_i = str(getattr(row, "父号"))
         ma_i = str(getattr(row, "母号"))
-        f_i = str(getattr(row, "_4"))
+        if "家系号" in edges_df.columns:
+            f_i = str(getattr(row, "家系号"))
+        else:
+            f_i = str(getattr(row, "_4"))
         if "性别" in edges_df.columns:
             gd = str(getattr(row, "性别"))
         else:

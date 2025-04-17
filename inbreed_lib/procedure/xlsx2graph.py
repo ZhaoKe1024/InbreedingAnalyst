@@ -34,6 +34,7 @@ def read_init_vertices_from_xlsx(file_path="./历代配种方案及出雏对照2
     for row in sex_table.itertuples():
         name = getattr(row, "公鸡号")
         # if name
+        # print("公鸡号:", name)
         name = name.split('.')[0]
         family_id = getattr(row, "家系号").split('.')[0]
         fname = getattr(row, "母鸡号").split('.')[0]
