@@ -1,35 +1,21 @@
-[English](./README_cn.md)  | 简体中文
+一个基于数量遗传学的家禽育种模拟计算工具箱
 
-通过网页录制音频、填写信息，通过Javascript 发送POST到Python Flask框架，然后存储到MySQL数据库，音频存储到本地文件，两者通过文件名对应。
+# 家禽育种优化程序
 
-# 最小所需文件结构
-只需如下三个文件
-```
-root
-└─main.py  # 运行启动flask服务
-└─templates
-│    └─index.html  # 前端页面
-└─databasekits
-     └─table_packets.py
-```
-其他都不必要。
+给定多代家禽的信息 ，例如2017、2018、...、2020年的家禽配种和出雏方案，构建出一个族谱图，创建对应的图数据结构。然后采用遗传算法，给出2021年的家禽配种方案，目标为配种平均亲缘相关系数最小化。
 
+## The Input Data
 
-# 运行MySQL
-```
-systemctl start mysqld
-```
+Table data like xlsx/xls:
+- 包含多个 sheet，每一个sheet以年份命名（2017, 2018, ...）
+- 每个sheet具有6个必需的列：(公鸡号, 母鸡号 / 翅号, 父号, 母号, 性别)
+- 在每一个sheet内，公鸡号和母鸡号的并集，是上一个sheet（上一年）的翅号集合的子集。意味着每一年的父母都是上一代的孩子。
+- 在每一个sheet内，父号和母号的并集，与同意sheet内的公鸡号和母鸡号的并集相同。意味着这一年的父母所生育的子代。
 
-运行Python Flask
-```
-python3 main.py
-```
-
-查询
-```
-> sudo mysql -uroot -p
-> {password}
-> {password}
-> use {databsename}
-> select * from {tablename}
-```
+## 自定义数据集构建族谱图并用遗传算法给出配种方案
+> python3 myself.py
+- file_path: xlsx文件，每一个sheet代表一个年份的内容， 
+- result_file: 输出结果的xlsx文件， 
+- configs:
+  - gene_idx: 进行配种的目标年份 。
+  - mode: [min, max]，优化目标，亲缘相关系数最小化 / 最大化。
